@@ -242,6 +242,7 @@ def main():
     parser = argparse.ArgumentParser(description='GPT CLI with memory window and summary update.')
     parser.add_argument('--reset', action='store_true', help='Reset memory and exit')
     parser.add_argument('--env', action='store_true', help='Edit the .env file and exit')
+    parser.add_argument('--uninstall', action='store_true', help='Uninstall GPT CLI')
     parser.add_argument('input_data', nargs='*', help='Input text for one-shot use')
     args = parser.parse_args()
 
@@ -256,6 +257,14 @@ def main():
         os.system(f"{editor} {env_path}")
         return
     
+    if args.uninstall:
+        uninstall_path = os.path.expanduser("~/.gpt-cli/uninstall.sh")
+        if os.path.isfile(uninstall_path):
+            os.system(f"bash {uninstall_path}")
+        else:
+            console.print("[bold red]❌ uninstall.sh not found in ~/.gpt-cli[/bold red]")
+        return
+
     load_memory()
 
     if not sys.stdin.isatty():

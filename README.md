@@ -121,6 +121,24 @@ echo "Write a haiku about the ocean" | gpt
 gpt --reset
 ```
 
+> This clears all saved memory and summaries, then exits.
+
+### Edit Environment Configuration
+
+```bash
+gpt --env
+```
+
+> Opens your `.env` file in your default terminal editor (e.g., `nano`, `vim`, or set via `$EDITOR`).
+
+### Uninstall
+
+```bash
+gpt --uninstall
+```
+
+> This command will completely remove the GPT CLI, including the .env file and virtual environment under ~/.gpt-cli, as well as the global gpt command from ~/.local/bin.
+
 ---
 
 ## 🔐 Environment Variables (Full Reference)

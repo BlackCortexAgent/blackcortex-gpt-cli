@@ -8,33 +8,52 @@ SCRIPT_ENTRY="gpt.py"
 
 echo "📦 Installing GPT CLI to $INSTALL_DIR"
 
-# Prompt if already installed
+# Update if already present
 if [ -d "$INSTALL_DIR" ]; then
-  read -p "⚠️ GPT CLI already exists at $INSTALL_DIR. Overwrite? [y/N] " confirm
-  if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-    echo "❌ Install cancelled."
-    exit 1
-  fi
-  rm -rf "$INSTALL_DIR"
+  echo "📁 Updating existing GPT CLI at $INSTALL_DIR"
+else
+  echo "📁 Creating GPT CLI directory at $INSTALL_DIR"
+  mkdir -p "$INSTALL_DIR"
 fi
 
 # Create install directory and copy gpt.py
 mkdir -p "$INSTALL_DIR"
 cp "$SCRIPT_ENTRY" "$INSTALL_DIR/"
 cp "requirements.txt" "$INSTALL_DIR/"
+cp "uninstall.sh" "$INSTALL_DIR/"
 
-# Create empty .env if not already present
-touch "$INSTALL_DIR/.env"
+# Create .env template if not already present
+if [ ! -f "$INSTALL_DIR/.env" ]; then
+  cat <<EOF > "$INSTALL_DIR/.env"
+# GPT CLI Configuration
+# See: https://github.com/Konijima/gpt-cli
+# Uncomment the lines you want to override.
+
+#OPENAI_API_KEY=
+#OPENAI_MODEL=
+#OPENAI_DEFAULT_PROMPT=
+#OPENAI_LOGFILE=
+#OPENAI_TEMPERATURE=
+#OPENAI_MAX_TOKENS=
+#OPENAI_MAX_SUMMARY_TOKENS=
+#OPENAI_MEMORY_PATH=
+#OPENAI_STREAM_ENABLED=
+EOF
+  echo "📝 Created .env template at $INSTALL_DIR/.env"
+fi
 
 # Create virtual environment
 cd "$INSTALL_DIR"
 python3 -m venv venv
 source venv/bin/activate
 
+# Upgrade pip
+pip install --upgrade pip --quiet
+
 # Install dependencies if available
 if [ -f requirements.txt ]; then
   echo "📄 Installing dependencies from requirements.txt..."
-  pip install -r requirements.txt
+  pip install -r requirements.txt --quiet
 fi
 
 # Ensure ~/.local/bin exists
