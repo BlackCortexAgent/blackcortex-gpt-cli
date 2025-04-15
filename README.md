@@ -30,27 +30,45 @@ git clone https://github.com/Konijima/gpt-cli.git
 cd gpt-cli
 ```
 
-### 2. Create a Virtual Environment
+### 2. Run the Installer
+
+This will:
+
+- Copy `gpt.py` to `~/.gpt-cli/`
+- Set up a Python virtual environment
+- Install dependencies (if `requirements.txt` exists)
+- Create an empty `.env` file (if not already present)
+- Install a global `gpt` launcher in `~/.local/bin/gpt`
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+./install.sh
 ```
 
-### 3. Install Dependencies
+If `~/.local/bin` is not in your `PATH`, the installer will offer to add it to your shell configuration (`.bashrc` or `.zshrc`).
+
+---
+
+## 🧼 Uninstallation
+
+To completely remove the CLI:
 
 ```bash
-pip install -r requirements.txt
+./uninstall.sh
 ```
+
+This will:
+
+- Remove the `gpt` command from `~/.local/bin/`
+- Delete the CLI install at `~/.gpt-cli/`
 
 ---
 
 ## 🛠️ Environment Setup
 
-Create a `.env` file in the root directory to configure your API and runtime settings:
+A `.env` file is required to store your API key and configuration.
 
 ```bash
-touch .env
+touch ~/.gpt-cli/.env
 ```
 
 ### Sample `.env` File
@@ -71,36 +89,36 @@ OPENAI_STREAM_ENABLED=false
 
 ## 🔧 Usage
 
+After installation, you can use the `gpt` command globally.
+
 ### Interactive Mode
 
 ```bash
-python3 gpt.py
+gpt
 ```
 
 You’ll enter a REPL-like interface:
 
 ```bash
 🧠 GPT CLI is ready. Type your question or 'exit' to quit.
-
-You: What is the capital of France?
 ```
 
 ### One-Shot Mode
 
 ```bash
-python3 gpt.py "Translate 'hello' to French"
+gpt "Translate 'hello' to French"
 ```
 
 ### From Pipe Input
 
 ```bash
-echo "Write a haiku about the ocean" | python3 gpt.py
+echo "Write a haiku about the ocean" | gpt
 ```
 
 ### Reset Memory
 
 ```bash
-python3 gpt.py --reset
+gpt --reset
 ```
 
 ---
@@ -123,7 +141,7 @@ python3 gpt.py --reset
 
 ## 📝 Log Format
 
-All conversations are appended to the log file if `OPENAI_LOGFILE` is set:
+If `OPENAI_LOGFILE` is set, all prompts and responses are saved:
 
 ```
 [2025-04-15 15:51:51] Prompt:
@@ -143,12 +161,12 @@ Memory consists of:
 - A **rolling summary** of conversation
 - The **10 most recent messages**
 
-When 20 messages are accumulated, the script calls the API to **summarize** and compact them into the summary for future context.
+When 20 messages accumulate, the tool summarizes them into the context summary.
 
-You can reset memory with:
+To reset memory:
 
 ```bash
-python3 gpt.py --reset
+gpt --reset
 ```
 
 ---
@@ -156,8 +174,8 @@ python3 gpt.py --reset
 ## ❓ Troubleshooting
 
 - ❌ *Missing API key*: Ensure `OPENAI_API_KEY` is set in `.env`
-- ❌ *Client failed to initialize*: Verify API key and network connection
-- 💭 *Too many tokens*: Reduce prompt or increase summarization frequency
+- ❌ *Client failed to initialize*: Check internet and API credentials
+- 💭 *Too many tokens*: Try a smaller input or enable summarization
 
 ---
 
