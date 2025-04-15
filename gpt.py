@@ -240,14 +240,23 @@ def run_interactive():
 
 def main():
     parser = argparse.ArgumentParser(description='GPT CLI with memory window and summary update.')
-    parser.add_argument('--reset', action='store_true', help='Reset memory before starting')
+    parser.add_argument('--reset', action='store_true', help='Reset memory and exit')
+    parser.add_argument('--env', action='store_true', help='Edit the .env file and exit')
     parser.add_argument('input_data', nargs='*', help='Input text for one-shot use')
     args = parser.parse_args()
 
     if args.reset:
         reset_memory()
-    else:
-        load_memory()
+        return
+    
+    if args.env:
+        env_path = os.path.expanduser("~/.gpt-cli/.env")
+        os.makedirs(os.path.dirname(env_path), exist_ok=True)
+        editor = os.getenv('EDITOR', 'nano')
+        os.system(f"{editor} {env_path}")
+        return
+    
+    load_memory()
 
     if not sys.stdin.isatty():
         input_data = sys.stdin.read().strip()
