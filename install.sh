@@ -41,15 +41,21 @@ fi
 mkdir -p "$(dirname "$GLOBAL_BIN")"
 
 # Write launcher
-cat <<EOF > "$GLOBAL_BIN"
+cat <<'EOF' > "$GLOBAL_BIN"
 #!/usr/bin/env bash
-source "$INSTALL_DIR/venv/bin/activate"
-cd "$INSTALL_DIR"
+source "$HOME/.gpt-cli/venv/bin/activate"
+cd "$HOME/.gpt-cli"
 
-# Load environment variables from .env
-export \$(grep -v '^#' .env | xargs)
+# Load .env variables manually (line-by-line, skipping comments)
+if [ -f .env ]; then
+  while IFS='=' read -r key value; do
+    # Ignore lines that are empty or start with #
+    [[ -z "$key" || "$key" =~ ^# ]] && continue
+    export "$key"="$value"
+  done < .env
+fi
 
-exec python $SCRIPT_ENTRY "\$@"
+exec python gpt.py "$@"
 EOF
 
 chmod +x "$GLOBAL_BIN"
