@@ -21,6 +21,7 @@ fi
 # Create install directory and copy gpt.py
 mkdir -p "$INSTALL_DIR"
 cp "$SCRIPT_ENTRY" "$INSTALL_DIR/"
+cp "requirements.txt" "$INSTALL_DIR/"
 
 # Create empty .env if not already present
 touch "$INSTALL_DIR/.env"
