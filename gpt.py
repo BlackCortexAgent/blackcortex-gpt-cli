@@ -3,15 +3,19 @@
 import os
 import sys
 import json
+import shutil
 import argparse
 from datetime import datetime
 from openai import OpenAI, OpenAIError
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.text import Text
-from prompt_toolkit import prompt
+from prompt_toolkit import prompt, PromptSession
+from prompt_toolkit.output import ColorDepth, DummyOutput
 from prompt_toolkit.history import FileHistory
+from prompt_toolkit.patch_stdout import patch_stdout
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.formatted_text import HTML
 
 # === Configuration Defaults ===
 DEFAULT_MODEL = "gpt-4o"
@@ -210,20 +214,31 @@ def print_response(response: str):
     console.print(Markdown(response))
     console.print()  # spacing after
 
+def clear_last_lines(n: int = 1):
+    # Move up and clear each of the last n lines
+    for _ in range(n):
+        sys.stdout.write("\033[F\033[K")
+    sys.stdout.flush()
+
+def clear_input_lines(user_input: str, prompt_text: str = "You: "):
+    width = shutil.get_terminal_size().columns
+    total_len = len(prompt_text) + len(user_input)
+    lines = (total_len // width) + 1  # Add 1 to always cover remainder
+    clear_last_lines(lines)
+
 # === Main Loop ===
 def run_interactive():
     console.print("[bold green]🧠 GPT CLI is ready. Type your question or 'exit' to quit.[/bold green]\n")
+
+    session = PromptSession(
+        history=FileHistory(os.path.expanduser("~/.gpt_history")),
+        auto_suggest=AutoSuggestFromHistory()
+    )
+    
     while True:
         try:
-            user_input = prompt(
-                "You: ",
-                history=FileHistory(os.path.expanduser("~/.gpt_history")),
-                auto_suggest=AutoSuggestFromHistory()
-            ).strip()
-
-            # Clear the last input line
-            sys.stdout.write("\033[F\033[K")
-            sys.stdout.flush()
+            with patch_stdout():
+                user_input = session.prompt(HTML('<ansibrightblue><b>You:</b></ansibrightblue> '), color_depth=ColorDepth.TRUE_COLOR).strip()
 
             if not user_input:
                 continue
@@ -231,21 +246,96 @@ def run_interactive():
                 console.print("\n[bold yellow]Goodbye![/bold yellow]")
                 break
 
-            console.print(Text("You:", style="bold"))
+            clear_input_lines(user_input)
+            console.print(Text("You", style="bright_blue bold"))
             console.print(Markdown(user_input))
 
             response = get_answer(user_input)
             if not stream_enabled:
-                console.print()  # spacing before
-                console.print(Text("GPT:", style="bold"))
+                console.print()
+                console.print(Text("Assistant", style="bright_magenta bold"))
                 console.print(Markdown(response))
-                console.print()  # spacing before
+                console.print()
+                console.rule(style="grey")
+                console.print()
+            
             write_to_log(user_input, response)
 
         except KeyboardInterrupt:
             console.print("\n[bold yellow]Interrupted. Type 'exit' to quit.[/bold yellow]")
         except Exception as e:
             console.print(f"\n[bold red]Error:[/bold red] {e}\n")
+
+def command_env():
+    env_path = os.path.expanduser("~/.gpt-cli/.env")
+    os.makedirs(os.path.dirname(env_path), exist_ok=True)
+    editor = os.getenv('EDITOR', 'nano')
+    os.system(f"{editor} {env_path}")
+
+def command_uninstall():
+    uninstall_path = os.path.expanduser("~/.gpt-cli/uninstall.sh")
+    if os.path.isfile(uninstall_path):
+        os.system(f"bash {uninstall_path}")
+    else:
+        console.print("[bold red]❌ uninstall.sh not found in ~/.gpt-cli[/bold red]")
+
+def command_set_key(key):
+    if key is None:
+        console.print("[bold yellow]🔐 No API key provided. Please enter your OpenAI API key:[/bold yellow]")
+        key = prompt("API Key: ").strip()
+    
+    console.print("[bold cyan]🔑 Validating API key...[/bold cyan]")
+    try:
+        temp_client = OpenAI(api_key=key)
+        temp_client.models.list()
+    except OpenAIError as e:
+        console.print(f"[bold red]❌ Invalid API key:[/bold red] {e}")
+        return
+
+    # If validation passed, write to .env
+    env_path = os.path.expanduser("~/.gpt-cli/.env")
+    os.makedirs(os.path.dirname(env_path), exist_ok=True)
+
+    lines = []
+    if os.path.exists(env_path):
+        with open(env_path, "r") as f:
+            lines = f.readlines()
+
+    with open(env_path, "w") as f:
+        found = False
+        for line in lines:
+            # Check if the line contains OPENAI_API_KEY, regardless of position or comment
+            if "OPENAI_API_KEY=" in line:
+                f.write(f"OPENAI_API_KEY={key}\n")
+                found = True
+            else:
+                f.write(line)
+        if not found:
+            f.write(f"OPENAI_API_KEY={key }\n")
+
+    console.print("[bold green]✅ API key saved and validated.[/bold green]")
+
+def command_log():
+    if os.path.exists(log_file):
+        with open(log_file, "r") as f:
+            console.print(f.read())
+    else:
+        console.print("[yellow]⚠️ No log file found.[/yellow]")
+
+def command_clear_log():
+    if os.path.exists(log_file):
+        os.remove(log_file)
+        console.print("[bold green]🗑 Log file deleted.[/bold green]")
+    else:
+        console.print("[yellow]⚠️ No log file to delete.[/yellow]")
+
+def command_summary():
+    load_memory()
+    if rolling_summary:
+        console.print("[bold cyan]📋 Current Summary:[/bold cyan]\n")
+        console.print(Markdown(rolling_summary))
+    else:
+        console.print("[yellow]⚠️ No summary available yet.[/yellow]")
 
 def main():
     parser = argparse.ArgumentParser(
@@ -258,7 +348,7 @@ def main():
     parser.add_argument('--reset', action='store_true', help='Reset memory and exit')
     parser.add_argument('--summary', action='store_true', help='Show the current memory summary')
     parser.add_argument('--env', action='store_true', help='Edit the .env file')
-    parser.add_argument('--set-key', metavar='API_KEY', help='Update and validate the OpenAI API key in .env')
+    parser.add_argument('--set-key', nargs='?', const=None, metavar='API_KEY', help='Update and validate the OpenAI API key in .env (optional: pass key or use interactive mode)')
 
     # Logs
     parser.add_argument('--log', action='store_true', help='Print conversation log')
@@ -275,75 +365,27 @@ def main():
         return
     
     if args.env:
-        env_path = os.path.expanduser("~/.gpt-cli/.env")
-        os.makedirs(os.path.dirname(env_path), exist_ok=True)
-        editor = os.getenv('EDITOR', 'nano')
-        os.system(f"{editor} {env_path}")
+        command_env()
         return
     
     if args.uninstall:
-        uninstall_path = os.path.expanduser("~/.gpt-cli/uninstall.sh")
-        if os.path.isfile(uninstall_path):
-            os.system(f"bash {uninstall_path}")
-        else:
-            console.print("[bold red]❌ uninstall.sh not found in ~/.gpt-cli[/bold red]")
+        command_uninstall()
         return
     
-    if args.set_key:
-        console.print("[bold cyan]🔑 Validating API key...[/bold cyan]")
-        try:
-            temp_client = OpenAI(api_key=args.set_key)
-            temp_client.models.list()
-        except OpenAIError as e:
-            console.print(f"[bold red]❌ Invalid API key:[/bold red] {e}")
-            return
-
-        # If validation passed, write to .env
-        env_path = os.path.expanduser("~/.gpt-cli/.env")
-        os.makedirs(os.path.dirname(env_path), exist_ok=True)
-
-        lines = []
-        if os.path.exists(env_path):
-            with open(env_path, "r") as f:
-                lines = f.readlines()
-
-        with open(env_path, "w") as f:
-            found = False
-            for line in lines:
-                if line.strip().startswith("OPENAI_API_KEY="):
-                    f.write(f"OPENAI_API_KEY={args.set_key}\n")
-                    found = True
-                else:
-                    f.write(line)
-            if not found:
-                f.write(f"OPENAI_API_KEY={args.set_key}\n")
-
-        console.print("[bold green]✅ API key saved and validated.[/bold green]")
+    if args.set_key is not None or '--set-key' in sys.argv:
+        command_set_key(args.set_key)
         return
 
     if args.log:
-        if os.path.exists(log_file):
-            with open(log_file, "r") as f:
-                console.print(f.read())
-        else:
-            console.print("[yellow]⚠️ No log file found.[/yellow]")
+        command_log()
         return
 
     if args.clear_log:
-        if os.path.exists(log_file):
-            os.remove(log_file)
-            console.print("[bold green]🗑 Log file deleted.[/bold green]")
-        else:
-            console.print("[yellow]⚠️ No log file to delete.[/yellow]")
+        command_clear_log()
         return
     
     if args.summary:
-        load_memory()
-        if rolling_summary:
-            console.print("[bold cyan]📋 Current Summary:[/bold cyan]\n")
-            console.print(Markdown(rolling_summary))
-        else:
-            console.print("[yellow]⚠️ No summary available yet.[/yellow]")
+        command_summary()
         return
 
     # === Setup ===
