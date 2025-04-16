@@ -253,7 +253,9 @@ def run_interactive(markdown: bool):
             else:
                 console.print(user_input)
 
-            response = get_answer(user_input)
+            with console.status("", spinner="simpleDots"):
+                response = get_answer(user_input)
+
             if not stream_enabled:
                 console.print()
                 console.print(Text("Assistant", style="bright_magenta bold"))
