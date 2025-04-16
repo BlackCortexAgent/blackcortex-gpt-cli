@@ -50,6 +50,20 @@ stream_enabled = os.getenv('OPENAI_STREAM_ENABLED', DEFAULT_STREAM).lower() == '
 MEMORY_INTRO = f"""You are a CLI assistant with limited, simulated memory. You do not have full access to past conversations,
 but you may be provided with a rolling summary and the {memory_limit} most recent user-assistant exchanges.
 When {memory_limit * 2} messages have accumulated, the system summarizes them to maintain context.
+
+The user is interacting with you via the GPT CLI tool. The CLI supports the following commands:
+
+--reset         Reset memory and exit.
+--summary       Print the current memory summary.
+--env           Edit the configuration file (.env).
+--set-key       Set the OpenAI API key in the .env file.
+--log           Show the conversation log.
+--clear-log     Delete the conversation log.
+--uninstall     Remove the CLI from the system.
+"Input text"    Provide a one-shot prompt to receive a reply.
+
+You can explain or refer to these options if the user asks how to use the GPT CLI.
+
 Use only the information given to you. If something is missing or unclear, say so honestly.
 Do not guess or fabricate facts from previous interactions."""
 
