@@ -179,9 +179,12 @@ def run_interactive(markdown: bool):
                 response = get_answer(user_input)
 
             if not stream_enabled:
+                console.print()
                 console.print(Text("Assistant", style="bright_magenta bold"))
                 console.print(Markdown(response) if markdown else response)
+                console.print()
                 console.rule(style="grey")
+                console.print()
             
             write_to_log(user_input, response)
 
