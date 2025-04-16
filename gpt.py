@@ -227,7 +227,7 @@ def clear_input_lines(user_input: str, prompt_text: str = "You: "):
     clear_last_lines(lines)
 
 # === Main Loop ===
-def run_interactive():
+def run_interactive(markdown: bool):
     console.print("[bold green]🧠 GPT CLI is ready. Type your question or 'exit' to quit.[/bold green]\n")
 
     session = PromptSession(
@@ -248,13 +248,19 @@ def run_interactive():
 
             clear_input_lines(user_input)
             console.print(Text("You", style="bright_blue bold"))
-            console.print(Markdown(user_input))
+            if markdown:
+                console.print(Markdown(user_input))
+            else:
+                console.print(user_input)
 
             response = get_answer(user_input)
             if not stream_enabled:
                 console.print()
                 console.print(Text("Assistant", style="bright_magenta bold"))
-                console.print(Markdown(response))
+                if markdown:
+                    console.print(Markdown(response))
+                else:
+                    console.print(response)
                 console.print()
                 console.rule(style="grey")
                 console.print()
@@ -329,11 +335,14 @@ def command_clear_log():
     else:
         console.print("[yellow]⚠️ No log file to delete.[/yellow]")
 
-def command_summary():
+def command_summary(markdown: bool):
     load_memory()
     if rolling_summary:
         console.print("[bold cyan]📋 Current Summary:[/bold cyan]\n")
-        console.print(Markdown(rolling_summary))
+        if markdown:
+            console.print(Markdown(rolling_summary))
+        else:
+            console.print(rolling_summary)
     else:
         console.print("[yellow]⚠️ No summary available yet.[/yellow]")
 
@@ -343,6 +352,14 @@ def main():
         description='🧠 GPT CLI — A conversational assistant with memory, config, and logging features.',
         formatter_class=argparse.RawTextHelpFormatter
     )
+    # Settings
+    parser.add_argument(
+        '--no-markdown',
+        dest='markdown',
+        action='store_false',
+        help='Disable Markdown formatting in responses'
+    )
+    parser.set_defaults(markdown=True)
 
     # Optional utilities
     parser.add_argument('--reset', action='store_true', help='Reset memory and exit')
@@ -385,7 +402,7 @@ def main():
         return
     
     if args.summary:
-        command_summary()
+        command_summary(args.markdown)
         return
 
     # === Setup ===
@@ -409,10 +426,13 @@ def main():
 
     if input_data:
         response = get_answer_blocking(input_data)
-        console.print(response)
+        if args.markdown:
+            console.print(Markdown(response))
+        else:
+            console.print(response)
         write_to_log(input_data, response)
     else:
-        run_interactive()
+        run_interactive(args.markdown)
 
 if __name__ == '__main__':
     main()
