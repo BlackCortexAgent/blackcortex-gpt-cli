@@ -37,8 +37,10 @@ if [ ! -f "$INSTALL_DIR/.env" ]; then
 #OPENAI_MAX_TOKENS=
 #OPENAI_MAX_SUMMARY_TOKENS=
 #OPENAI_MEMORY_PATH=
+#OPENAI_MEMORY_LIMIT=
 #OPENAI_STREAM_ENABLED=
 EOF
+  chmod 600 "$INSTALL_DIR/.env"
   echo "📝 Created .env template at $INSTALL_DIR/.env"
 fi
 
@@ -114,4 +116,8 @@ if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
   echo ""
 fi
 
-echo "✅ GPT CLI installed successfully! Run it with: gpt"
+echo "✅ GPT CLI installed successfully!"
+echo ""
+echo "👉 To start using it, run:  gpt"
+echo "🔐 To set your OpenAI API key:  gpt --set-key YOUR_API_KEY"
+echo "🛠️  To edit configuration manually:  gpt --env"
