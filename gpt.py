@@ -33,10 +33,6 @@ except ImportError:
 
 # === Environment Setup ===
 api_key = os.getenv('OPENAI_API_KEY')
-if not api_key:
-    sys.stderr.write("❌ Missing OPENAI_API_KEY. Set it in your environment or .env file.\n")
-    sys.exit(1)
-
 model = os.getenv('OPENAI_MODEL', DEFAULT_MODEL)
 default_prompt = os.getenv('OPENAI_DEFAULT_PROMPT', DEFAULT_PROMPT)
 log_file = os.path.expanduser(os.getenv('OPENAI_LOGFILE', DEFAULT_LOG_PATH))
@@ -67,13 +63,8 @@ You can explain or refer to these options if the user asks how to use the GPT CL
 Use only the information given to you. If something is missing or unclear, say so honestly.
 Do not guess or fabricate facts from previous interactions."""
 
-# === Setup ===
-try:
-    client = OpenAI(api_key=api_key)
-except OpenAIError as e:
-    sys.stderr.write(f"❌ Failed to initialize OpenAI client: {e}\n")
-    sys.exit(1)
-
+# Prepare client variable
+client: OpenAI
 console = Console()
 rolling_summary = ""
 recent_messages = []
@@ -354,6 +345,18 @@ def main():
         else:
             console.print("[yellow]⚠️ No summary available yet.[/yellow]")
         return
+
+    # === Setup ===
+    try:
+        if not api_key:
+            sys.stderr.write("❌ Missing OPENAI_API_KEY. Set it in your environment or .env file.\n")
+            sys.exit(1)
+
+        global client
+        client = OpenAI(api_key=api_key)
+    except OpenAIError as e:
+        sys.stderr.write(f"❌ Failed to initialize OpenAI client: {e}\n")
+        sys.exit(1)
 
     load_memory()
 

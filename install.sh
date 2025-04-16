@@ -17,7 +17,6 @@ else
 fi
 
 # Create install directory and copy gpt.py
-mkdir -p "$INSTALL_DIR"
 cp "$SCRIPT_ENTRY" "$INSTALL_DIR/"
 cp "requirements.txt" "$INSTALL_DIR/"
 cp "uninstall.sh" "$INSTALL_DIR/"
@@ -50,12 +49,12 @@ python3 -m venv venv
 source venv/bin/activate
 
 # Upgrade pip
-pip install --upgrade pip --quiet
+pip install --upgrade pip #--quiet
 
 # Install dependencies if available
 if [ -f requirements.txt ]; then
   echo "📄 Installing dependencies from requirements.txt..."
-  pip install -r requirements.txt --quiet
+  pip install -r requirements.txt #--quiet
 fi
 
 # Ensure ~/.local/bin exists
