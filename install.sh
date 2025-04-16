@@ -65,16 +65,6 @@ cat <<'EOF' > "$GLOBAL_BIN"
 #!/usr/bin/env bash
 source "$HOME/.gpt-cli/venv/bin/activate"
 cd "$HOME/.gpt-cli"
-
-# Load .env variables manually (line-by-line, skipping comments)
-if [ -f .env ]; then
-  while IFS='=' read -r key value; do
-    # Ignore lines that are empty or start with #
-    [[ -z "$key" || "$key" =~ ^# ]] && continue
-    export "$key"="$value"
-  done < .env
-fi
-
 exec python gpt.py "$@"
 EOF
 
