@@ -349,9 +349,11 @@ def command_summary(markdown: bool):
 def main():
     parser = argparse.ArgumentParser(
         prog='gpt',
+        allow_abbrev=False,
         description='🧠 GPT CLI — A conversational assistant with memory, config, and logging features.',
         formatter_class=argparse.RawTextHelpFormatter
     )
+
     # Settings
     parser.add_argument(
         '--no-markdown',
