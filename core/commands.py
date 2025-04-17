@@ -1,5 +1,6 @@
 import os
 import subprocess
+import shutil
 from openai import OpenAI, OpenAIError
 from rich.console import Console
 from rich.markdown import Markdown
@@ -19,25 +20,31 @@ def command_env():
 
 # === Run the CLI update script ===
 def command_update():
-    install_path = os.path.expanduser("~/.gpt-cli/install.sh")
-    if os.path.isfile(install_path):
-        try:
-            subprocess.run(["bash", install_path], check=True)
-        except subprocess.CalledProcessError as e:
-            console.print(f"[bold red]❌ Update script failed:[/bold red] {e}")
-    else:
-        console.print("[bold red]❌ install.sh not found in ~/.gpt-cli[/bold red]")
+    console.print("[bold cyan]🔄 Updating GPT CLI...[/bold cyan]")
+    try:
+        # Attempt pipx upgrade if available
+        if shutil.which("pipx"):
+            subprocess.run(["pipx", "upgrade", "gpt-cli"], check=True)
+        else:
+            subprocess.run(["pip", "install", "--upgrade", "gpt-cli"], check=True)
+        console.print("[bold green]✅ GPT CLI updated successfully.[/bold green]")
+    except Exception as e:
+        console.print(f"[bold red]❌ Update failed:[/bold red] {e}")
+        console.print("💡 You can manually upgrade with 'pip install --upgrade gpt-cli' or 'pipx upgrade gpt-cli'")
 
 # === Run the CLI uninstall script ===
 def command_uninstall():
-    uninstall_path = os.path.expanduser("~/.gpt-cli/uninstall.sh")
-    if os.path.isfile(uninstall_path):
-        try:
-            subprocess.run(["bash", uninstall_path], check=True)
-        except subprocess.CalledProcessError as e:
-            console.print(f"[bold red]❌ Uninstall script failed:[/bold red] {e}")
-    else:
-        console.print("[bold red]❌ uninstall.sh not found in ~/.gpt-cli[/bold red]")
+    console.print("[bold cyan]🗑️ Uninstalling GPT CLI...[/bold cyan]")
+    try:
+        # Attempt pipx uninstall if available
+        if shutil.which("pipx"):
+            subprocess.run(["pipx", "uninstall", "gpt-cli"], check=True)
+        else:
+            subprocess.run(["pip", "uninstall", "-y", "gpt-cli"], check=True)
+        console.print("[bold green]✅ GPT CLI uninstalled successfully.[/bold green]")
+    except Exception as e:
+        console.print(f"[bold red]❌ Uninstall failed:[/bold red] {e}")
+        console.print("💡 You can manually uninstall with 'pip uninstall gpt-cli' or 'pipx uninstall gpt-cli'")
 
 # === Set and validate the OpenAI API key ===
 def command_set_key(api_key):

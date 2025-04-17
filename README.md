@@ -23,43 +23,52 @@ A terminal-based GPT assistant powered by the OpenAI API, featuring:
 
 ## 🚀 Installation
 
-### 1. Clone the Repository
+Install the GPT CLI via pip or pipx. Requires Python 3.8+.
+
+### Using PyPI
+
+```bash
+pip install konijima-gpt-cli
+```
+
+### Using pipx (recommended)
+
+```bash
+pipx install konijima-gpt-cli
+```
+
+### From GitHub (install directly from source)
+
+```bash
+# Install directly from the GitHub repo to avoid PyPI conflicts
+pip install git+https://github.com/Konijima/gpt-cli.git#egg=konijima-gpt-cli
+# or with pipx
+pipx install git+https://github.com/Konijima/gpt-cli.git#egg=konijima-gpt-cli
+```
+
+### Development Installation
 
 ```bash
 git clone https://github.com/Konijima/gpt-cli.git
 cd gpt-cli
+pip install .
 ```
 
-### 2. Run the Installer
-
-This will:
-
-- Copy `gpt.py` to `~/.gpt-cli/`
-- Set up a Python virtual environment
-- Install dependencies (if `requirements.txt` exists)
-- Create an empty `.env` file (if not already present)
-- Install a global `gpt` launcher in `~/.local/bin/gpt`
+### Update
 
 ```bash
-./install.sh
+pip install --upgrade konijima-gpt-cli
+# or
+pipx upgrade konijima-gpt-cli
 ```
 
-If `~/.local/bin` is not in your `PATH`, the installer will offer to add it to your shell configuration (`.bashrc` or `.zshrc`).
-
----
-
-## 🧼 Uninstallation
-
-To completely remove the CLI:
+### Uninstallation
 
 ```bash
-./uninstall.sh
+pip uninstall konijima-gpt-cli
+# or
+pipx uninstall konijima-gpt-cli
 ```
-
-This will:
-
-- Remove the `gpt` command from `~/.local/bin/`
-- Delete the CLI install at `~/.gpt-cli/`
 
 ---
 
