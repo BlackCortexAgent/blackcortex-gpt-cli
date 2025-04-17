@@ -1,4 +1,5 @@
 # 🧠 GPT CLI Tool with Persistent Memory and Streaming
+[![Publish to PyPI](https://github.com/Konijima/gpt-cli/actions/workflows/publish.yml/badge.svg)](https://github.com/Konijima/gpt-cli/actions/workflows/publish.yml)
 
 A terminal-based GPT assistant powered by the OpenAI API, featuring:
 

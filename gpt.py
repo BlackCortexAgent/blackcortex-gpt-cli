@@ -2,8 +2,6 @@
 
 import os
 import sys
-import json
-import shutil
 import argparse
 from datetime import datetime
 from openai import OpenAI, OpenAIError
@@ -17,9 +15,16 @@ from prompt_toolkit.patch_stdout import patch_stdout
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.formatted_text import HTML
 
-from core.config import *
-from core.commands import *
-from core.memory import *
+from core.config import (
+    api_key, model, memory_path, memory_limit, max_tokens,
+    max_summary_tokens, temperature, default_prompt,
+    log_file, stream_enabled
+)
+from core.commands import (
+    command_env, command_update, command_uninstall, 
+    command_set_key, command_ping, command_log, command_clear_log
+)
+from core.memory import load_memory, save_memory, reset_memory, summarize_recent
 
 # === Runtime ===
 console = Console()
@@ -105,17 +110,13 @@ def get_answer_streaming(prompt_text: str) -> str:
         return f"❌ OpenAI API error: {e}"
 
     full_reply = ""
-    console.print()
-    console.print(Text("GPT:", style="bold"))
 
     for chunk in stream:
         content = chunk.choices[0].delta.content if chunk.choices[0].delta else ""
         if content:
             full_reply += content
-            print(content, end="", flush=True)
-
-    print()
-    console.print()
+            console.print(content, end="", soft_wrap=True)
+    console.print()  # End of stream line
 
     recent_messages.append({"role": "assistant", "content": full_reply})
 
@@ -138,19 +139,9 @@ def write_to_log(prompt_text: str, response: str):
             f.write(f"[{timestamp}] Prompt:\n{prompt_text}\n\nResponse:\n{response}\n{'-'*80}\n")
         os.chmod(log_file, 0o600)
 
-def clear_last_lines(n: int = 1):
-    for _ in range(n):
-        sys.stdout.write("\033[F\033[K")
-    sys.stdout.flush()
-
-def clear_input_lines(user_input: str, prompt_text: str = "You: "):
-    width = shutil.get_terminal_size().columns
-    lines = (len(prompt_text) + len(user_input)) // width + 1
-    clear_last_lines(lines)
-
 # === REPL Mode ===
 def run_interactive(markdown: bool):
-    console.print("[bold green]🧠 GPT CLI is ready. Type your question or 'exit' to quit.[/bold green]\n")
+    console.print("[bold green]🧠 GPT CLI is ready. Type 'exit' to quit.[/bold green]\n")
 
     session = PromptSession(
         history=FileHistory(os.path.expanduser("~/.gpt_history")),
@@ -161,7 +152,7 @@ def run_interactive(markdown: bool):
         try:
             with patch_stdout():
                 user_input = session.prompt(
-                    HTML('<ansibrightblue><b>You:</b></ansibrightblue> '),
+                    HTML('<ansibrightblue><b>You: </b></ansibrightblue>'),
                     color_depth=ColorDepth.TRUE_COLOR
                 ).strip()
 
@@ -171,21 +162,21 @@ def run_interactive(markdown: bool):
                 console.print("\n[bold yellow]Goodbye![/bold yellow]")
                 break
 
-            clear_input_lines(user_input)
-            console.print(Text("You", style="bright_blue bold"))
-            console.print(Markdown(user_input) if markdown else user_input)
-
-            with console.status("", spinner="simpleDots"):
+            # --- Handle GPT response
+            if stream_enabled:
+                console.print(Text("GPT:", style="bold green"), end=" ")
                 response = get_answer(user_input)
-
-            if not stream_enabled:
-                console.print()
-                console.print(Text("Assistant", style="bright_magenta bold"))
+                console.print()  # End of stream line
+            else:
+                with console.status("", spinner="simpleDots"):
+                    response = get_answer(user_input)
+                console.print(Text("GPT:", style="bold green"), end=" ")
                 console.print(Markdown(response) if markdown else response)
-                console.print()
-                console.rule(style="grey")
-                console.print()
-            
+
+            # --- End of round display
+            console.rule(style="grey")
+            console.print()
+
             write_to_log(user_input, response)
 
         except KeyboardInterrupt:
@@ -195,7 +186,7 @@ def run_interactive(markdown: bool):
 
 # === Main Entrypoint ===
 def main():
-    global rolling_summary, recent_messages, client
+    global stream_enabled, rolling_summary, recent_messages, client
 
     parser = argparse.ArgumentParser(
         prog='gpt',
@@ -206,6 +197,9 @@ def main():
 
     parser.add_argument('--no-markdown', dest='markdown', action='store_false', help='Disable Markdown formatting')
     parser.set_defaults(markdown=True)
+
+    parser.add_argument('--stream', dest='stream', action='store_true', help='Enable streaming responses')
+    parser.set_defaults(stream=False)
 
     parser.add_argument('--reset', action='store_true', help='Reset memory and exit')
     parser.add_argument('--summary', action='store_true', help='Show the current memory summary')
@@ -231,6 +225,8 @@ def main():
     if args.ping: return command_ping(api_key)
     if args.log: return command_log(log_file)
     if args.clear_log: return command_clear_log(log_file)
+    if args.stream:
+        stream_enabled = True
 
     try:
         if not api_key:
@@ -246,8 +242,9 @@ def main():
 
     input_data = sys.stdin.read().strip() if not sys.stdin.isatty() else ' '.join(args.input_data)
     if input_data:
-        response = get_answer_blocking(input_data)
-        console.print(Markdown(response) if args.markdown else response)
+        response = get_answer(input_data)
+        if not args.stream:
+            console.print(Markdown(response) if args.markdown else response)
         write_to_log(input_data, response)
     else:
         run_interactive(args.markdown)
