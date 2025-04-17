@@ -7,7 +7,8 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 version = (here / "VERSION").read_text(encoding="utf-8").strip()
 
 setup(
-    name="gpt-cli",
+    # Unique distribution name to avoid PyPI conflicts
+    name="konijima-gpt-cli",
     version=version,
     description="GPT CLI — A conversational assistant with memory, config, and logging features.",
     long_description=long_description,

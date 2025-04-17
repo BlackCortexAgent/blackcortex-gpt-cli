@@ -28,21 +28,22 @@ Install the GPT CLI via pip or pipx. Requires Python 3.8+.
 ### Using PyPI
 
 ```bash
-pip install gpt-cli
+pip install konijima-gpt-cli
 ```
 
 ### Using pipx (recommended)
 
 ```bash
-pipx install gpt-cli
+pipx install konijima-gpt-cli
 ```
 
-### From GitHub
+### From GitHub (install directly from source)
 
 ```bash
-pip install git+https://github.com/Konijima/gpt-cli.git
+# Install directly from the GitHub repo to avoid PyPI conflicts
+pip install git+https://github.com/Konijima/gpt-cli.git#egg=konijima-gpt-cli
 # or with pipx
-pipx install git+https://github.com/Konijima/gpt-cli.git
+pipx install git+https://github.com/Konijima/gpt-cli.git#egg=konijima-gpt-cli
 ```
 
 ### Development Installation
@@ -56,17 +57,17 @@ pip install .
 ### Update
 
 ```bash
-pip install --upgrade gpt-cli
+pip install --upgrade konijima-gpt-cli
 # or
-pipx upgrade gpt-cli
+pipx upgrade konijima-gpt-cli
 ```
 
 ### Uninstallation
 
 ```bash
-pip uninstall gpt-cli
+pip uninstall konijima-gpt-cli
 # or
-pipx uninstall gpt-cli
+pipx uninstall konijima-gpt-cli
 ```
 
 ---
