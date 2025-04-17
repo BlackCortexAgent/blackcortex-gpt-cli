@@ -3,7 +3,10 @@ import os
 # === Load .env if available ===
 try:
     from dotenv import load_dotenv
+    # Load .env from current directory if present
     load_dotenv()
+    # Load .env from installation directory (~/.gpt-cli/.env)
+    load_dotenv(os.path.expanduser("~/.gpt-cli/.env"))
 except ImportError:
     pass
 
