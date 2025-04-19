@@ -1,15 +1,15 @@
 include README.md
-include VERSION
-include requirements.txt
+include LICENSE
+include pyproject.toml
 
-recursive-include core *.py
-include gpt.py
+recursive-include blackcortex_cli *.py
 
 global-exclude *.pyc __pycache__ *.log .env
 
 prune .git
 prune .github
-prune venv
+prune .ruff_cache
+prune .pytest_cache
 prune .venv
 prune build
 prune dist
