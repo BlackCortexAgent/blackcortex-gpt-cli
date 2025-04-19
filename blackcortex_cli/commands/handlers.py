@@ -96,7 +96,7 @@ def command_version():
 
 
 def command_set_key(api_key):
-    """Set and validate the OpenAI API key, saving it to the .env file."""
+    """Set and validate the OpenAI API key, saving it to the .env file with secure permissions."""
     if api_key is None:
         console.print(
             "[bold yellow]🔐 No API key provided. Please enter your OpenAI API key:[/bold yellow]"
@@ -111,22 +111,28 @@ def command_set_key(api_key):
         console.print(f"[bold red]❌ Invalid API key:[/bold red] {e}")
         return
 
-    os.makedirs(os.path.dirname(ENV_PATH), exist_ok=True)
-    lines = []
-    if os.path.exists(ENV_PATH):
-        with open(ENV_PATH, "r", encoding="utf-8") as f:
-            lines = f.readlines()
+    try:
+        os.makedirs(os.path.dirname(ENV_PATH), exist_ok=True)
+        lines = []
+        if os.path.exists(ENV_PATH):
+            with open(ENV_PATH, "r", encoding="utf-8") as f:
+                lines = f.readlines()
 
-    with open(ENV_PATH, "w", encoding="utf-8") as f:
-        found = False
-        for line in lines:
-            if "OPENAI_API_KEY=" in line:
+        with open(ENV_PATH, "w", encoding="utf-8") as f:
+            found = False
+            for line in lines:
+                if "OPENAI_API_KEY=" in line:
+                    f.write(f"OPENAI_API_KEY={api_key}\n")
+                    found = True
+                else:
+                    f.write(line)
+            if not found:
                 f.write(f"OPENAI_API_KEY={api_key}\n")
-                found = True
-            else:
-                f.write(line)
-        if not found:
-            f.write(f"OPENAI_API_KEY={api_key}\n")
+
+        os.chmod(ENV_PATH, 0o600)
+    except OSError as e:
+        console.print(f"[bold red]❌ Failed to write .env file:[/bold red] {e}")
+        return
 
     console.print("[bold green]✅ API key saved and validated.[/bold green]")
 
