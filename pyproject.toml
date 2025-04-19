@@ -5,13 +5,13 @@ description = "Terminal-based GPT CLI with memory, markdown, and stream support"
 keywords = ["gpt", "cli", "terminal", "openai"]
 readme = "README.md"
 requires-python = ">=3.8"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
   { name = "Konijima", email = "konijima@blackcortex.net" }
 ]
 classifiers = [
   "Programming Language :: Python :: 3",
-  "License :: OSI Approved :: MIT License",
   "Environment :: Console",
   "Intended Audience :: Developers",
   "Topic :: Software Development :: Libraries :: Python Modules"
