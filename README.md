@@ -1,4 +1,5 @@
 # BLACKCORTEX GPT CLI
+
 [![Check (Lint + Test)](https://github.com/BlackCortexAgent/blackcortex-gpt-cli/actions/workflows/check.yml/badge.svg)](https://github.com/BlackCortexAgent/blackcortex-gpt-cli/actions/workflows/check.yml)
 [![Publish to PyPI](https://github.com/BlackCortexAgent/blackcortex-gpt-cli/actions/workflows/publish.yml/badge.svg)](https://github.com/BlackCortexAgent/blackcortex-gpt-cli/actions/workflows/publish.yml)
 
@@ -43,15 +44,7 @@ pipx install git+https://github.com/BlackCortexAgent/blackcortex-gpt-cli.git
 ```bash
 git clone https://github.com/BlackCortexAgent/blackcortex-gpt-cli.git
 cd blackcortex-gpt-cli
-pip install .
-```
-
-### Updating
-
-```bash
-pip install --upgrade blackcortex-gpt-cli
-# or
-pipx upgrade blackcortex-gpt-cli
+make install
 ```
 
 ## Environment Setup
@@ -127,7 +120,7 @@ OPENAI_DEFAULT_PROMPT=You are a helpful assistant.
 OPENAI_LOGFILE=~/.gpt.log                    # Log file location
 OPENAI_TEMPERATURE=0.5                       # Response randomness (default: 0.5)
 OPENAI_MAX_TOKENS=4096                       # Max response tokens
-OPENAI_MAX_SUMMARY_TOKENS=2048               # Max tokens for memory summarization
+OPENAI_MAX_SUMMARY_TOKENS=2048              # Max tokens for memory summarization
 OPENAI_MEMORY_PATH=~/.gpt_memory.json        # Path to memory file
 OPENAI_MEMORY_LIMIT=10                       # Number of recent messages stored (default: 10)
 OPENAI_STREAM_ENABLED=false                  # Enable token-by-token streaming (true/false)
@@ -160,6 +153,42 @@ GPT: Why did the database break up with the spreadsheet?
 Because it couldn't handle the rows of emotions.
 ────────────────────────────────────────────────────────
 ```
+
+## Contributing
+
+We welcome all contributions!
+
+### 🚀 Quickstart for Development
+
+```bash
+git clone https://github.com/BlackCortexAgent/blackcortex-gpt-cli.git
+cd blackcortex-gpt-cli
+make install
+```
+
+Run tests:
+
+```bash
+make test
+```
+
+Lint and format:
+
+```bash
+make lint
+make format
+```
+
+### ✅ Pre-commit Hook
+
+We use [pre-commit](https://pre-commit.com) for consistent formatting:
+
+```bash
+pre-commit install
+pre-commit run --all-files
+```
+
+### 📄 See [CONTRIBUTING.md](CONTRIBUTING.md) for full details.
 
 ## License
 
