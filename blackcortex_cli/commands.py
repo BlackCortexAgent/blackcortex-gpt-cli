@@ -4,9 +4,11 @@ OpenAI API key, logs, updates, and environment setup.
 """
 
 import os
+import pathlib
 import shutil
 import subprocess
 
+import tomllib
 from openai import OpenAI, OpenAIError
 from prompt_toolkit import prompt
 from rich.console import Console
@@ -14,6 +16,20 @@ from rich.markdown import Markdown
 
 console = Console()
 ENV_PATH = os.path.expanduser("~/.gpt-cli/.env")
+
+
+def read_project_metadata():
+    pyproject_path = pathlib.Path(__file__).parent.parent / "pyproject.toml"
+    with open(pyproject_path, "rb") as f:
+        data = tomllib.load(f)
+
+    project = data.get("project", {})
+    return {
+        "name": project.get("name"),
+        "version": project.get("version"),
+        "description": project.get("description"),
+        "authors": project.get("authors"),
+    }
 
 
 def command_env():
@@ -28,38 +44,53 @@ def command_env():
 
 def command_update():
     """Update the GPT CLI tool via pip or pipx."""
-    console.print("[bold cyan]🔄 Updating GPT CLI...[/bold cyan]")
+    meta = read_project_metadata()
+    package_name = meta["name"]
+
+    console.print(f"[bold cyan]🔄 Updating {package_name}...[/bold cyan]")
     try:
         if shutil.which("pipx"):
-            subprocess.run(["pipx", "upgrade", "konijima-gpt-cli"], check=True)
+            subprocess.run(["pipx", "upgrade", package_name], check=True)
         else:
-            subprocess.run(["pip", "install", "--upgrade", "konijima-gpt-cli"], check=True)
-        console.print("[bold green]✅ GPT CLI updated successfully.[/bold green]")
+            subprocess.run(["pip", "install", "--upgrade", package_name], check=True)
+        console.print(f"[bold green]✅ {package_name} updated successfully.[/bold green]")
     except subprocess.CalledProcessError as e:
         console.print(f"[bold red]❌ Update failed:[/bold red] {e}")
         console.print(
-            "💡 You can manually upgrade with "
-            "'pip install --upgrade konijima-gpt-cli' or "
-            "'pipx upgrade konijima-gpt-cli'"
+            f"💡 You can manually upgrade with "
+            f"'pip install --upgrade {package_name}' or "
+            f"'pipx upgrade {package_name}'"
         )
 
 
 def command_uninstall():
     """Uninstall the GPT CLI tool via pip or pipx."""
-    console.print("[bold cyan]🗑️ Uninstalling GPT CLI...[/bold cyan]")
+    meta = read_project_metadata()
+    package_name = meta["name"]
+
+    console.print(f"[bold cyan]🗑️ Uninstalling {package_name}...[/bold cyan]")
     try:
         if shutil.which("pipx"):
-            subprocess.run(["pipx", "uninstall", "konijima-gpt-cli"], check=True)
+            subprocess.run(["pipx", "uninstall", package_name], check=True)
         else:
-            subprocess.run(["pip", "uninstall", "-y", "konijima-gpt-cli"], check=True)
-        console.print("[bold green]✅ GPT CLI uninstalled successfully.[/bold green]")
+            subprocess.run(["pip", "uninstall", "-y", package_name], check=True)
+        console.print(f"[bold green]✅ {package_name} uninstalled successfully.[/bold green]")
     except subprocess.CalledProcessError as e:
         console.print(f"[bold red]❌ Uninstall failed:[/bold red] {e}")
         console.print(
-            "💡 You can manually uninstall with "
-            "'pip uninstall konijima-gpt-cli' or "
-            "'pipx uninstall konijima-gpt-cli'"
+            f"💡 You can manually uninstall with "
+            f"'pip uninstall {package_name}' or "
+            f"'pipx uninstall {package_name}'"
         )
+
+
+def command_version():
+    """Display the current version and project info."""
+    meta = read_project_metadata()
+    console.print(
+        f"[bold green]{meta['name']}[/bold green] "
+        f"v[cyan]{meta['version']}[/cyan] — {meta['description'] or 'No description.'}"
+    )
 
 
 def command_set_key(api_key):
