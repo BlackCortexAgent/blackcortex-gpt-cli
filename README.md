@@ -82,7 +82,7 @@ After installation, use the `gpt` command globally.
 ```bash
 gpt [-h] [--no-markdown] [--stream] [--reset] [--summary] [--env]
     [--set-key [API_KEY]] [--ping] [--log] [--clear-log]
-    [--update] [--uninstall] [input_data ...]
+    [--update] [--uninstall] [--version] [input_data ...]
 ```
 
 ### Positional Arguments
@@ -106,6 +106,7 @@ gpt [-h] [--no-markdown] [--stream] [--reset] [--summary] [--env]
 - `--clear-log` — Clear the conversation log file
 - `--update` — Update GPT CLI to the latest version
 - `--uninstall` — Uninstall GPT CLI completely
+- `--version` — Display the current version
 
 ## Environment Configuration
 
