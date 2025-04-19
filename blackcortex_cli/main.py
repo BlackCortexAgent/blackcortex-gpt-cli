@@ -114,6 +114,9 @@ def run_oneshot(input_data: str, args: argparse.Namespace):
 def main():
     args = parse_args()
 
+    if handle_early_exits(args):
+        return
+
     if not config.api_key:
         sys.stderr.write("❌ Missing OPENAI_API_KEY. Set it in your environment or .env file.\n")
         sys.exit(1)
@@ -124,9 +127,6 @@ def main():
     except OpenAIError as e:
         sys.stderr.write(f"❌ Failed to initialize OpenAI client: {e}\n")
         sys.exit(1)
-
-    if handle_early_exits(args):
-        return
 
     input_data = sys.stdin.read().strip() if not sys.stdin.isatty() else " ".join(args.input_data)
     if input_data:
