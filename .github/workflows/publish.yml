@@ -6,16 +6,8 @@ on:
       - "v*.*.*"
 
 jobs:
-  lint:
-    uses: ./.github/workflows/_lint.yml
-
-  test:
-    uses: ./.github/workflows/_test.yml
-    needs: lint
-
-  build:
-    name: Build
-    needs: test
+  release:
+    name: Build + Validate
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -30,10 +22,8 @@ jobs:
       - name: Install Make + build deps
         run: sudo apt-get update && sudo apt-get install -y make
 
-      - name: Build package
-        run: |
-          make install
-          make build
+      - name: Run release checks (lint, test, build)
+        run: make release
 
       - uses: actions/upload-artifact@v4
         with:
@@ -42,7 +32,7 @@ jobs:
 
   publish:
     name: Publish to PyPI
-    needs: build
+    needs: release
     runs-on: ubuntu-latest
     environment:
       name: pypi

@@ -1,16 +1,18 @@
+VENV_BIN := .venv/bin
+
 # === Virtual Environment ===
 install: ## Create virtualenv and install in editable mode with dev dependencies
 	@echo "🔧 Creating virtual environment and installing dependencies..."
 	python3 -m venv .venv
 	@echo "⬆️  Upgrading pip, setuptools, and wheel..."
-	.venv/bin/pip install --upgrade pip setuptools wheel
+	$(VENV_BIN)/pip install --upgrade pip setuptools wheel
 	@echo "📦 Installing project in editable mode with dev dependencies..."
-	.venv/bin/pip install -e ".[dev]"
+	$(VENV_BIN)/pip install -e ".[dev]"
 
 # === Uninstall ===
 uninstall: ## Uninstall the editable package and remove egg-info
 	@echo "🧹 Uninstalling editable package and cleaning metadata..."
-	.venv/bin/pip uninstall -y blackcortex-gpt-cli || echo "⚠️  Package not found or already uninstalled."
+	$(VENV_BIN)/pip uninstall -y blackcortex-gpt-cli || echo "⚠️  Package not found or already uninstalled."
 	@echo "🗑️  Removing leftover egg-info..."
 	rm -rf blackcortex_gpt_cli.egg-info
 	@echo "🔥 Removing virtual environment..."
@@ -35,11 +37,11 @@ build: clean ## Build sdist and wheel into dist/
 
 lint: ## Run Pylint on blackcortex_cli
 	@echo "🔎 Running Pylint..."
-	.venv/bin/pylint blackcortex_cli --fail-under=9.0
+	$(VENV_BIN)/pylint blackcortex_cli --fail-under=9.0
 
 test: ## Run pytest on the tests/ directory
 	@echo "🧪 Running tests..."
-	PYTHONPATH=./ .venv/bin/pytest tests --testdox
+	PYTHONPATH=./ $(VENV_BIN)/pytest tests --testdox
 
 check: lint test build ## Lint, test, build, and validate distributions
 	@echo "✅ Running full project check (lint, test, build, validate)..."
@@ -49,7 +51,10 @@ check: lint test build ## Lint, test, build, and validate distributions
 ci: install lint test ## Run install, lint, and test steps for CI
 	@echo "✅ CI check complete."
 
-publish: ci ## Run all checks then upload to PyPI
+release: install check ## Run full release flow
+	@echo "🚀 Ready to publish (all checks passed)."
+
+publish: release ## Run all checks then upload to PyPI
 	@echo "🚀 Publishing to PyPI..."
 	twine upload dist/*
 

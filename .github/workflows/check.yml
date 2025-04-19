@@ -6,9 +6,12 @@ on:
   pull_request:
 
 jobs:
-  lint:
-    uses: ./.github/workflows/_lint.yml
-
-  test:
-    uses: ./.github/workflows/_test.yml
-    needs: lint
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install -y make
+      - run: make ci
