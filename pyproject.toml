@@ -1,6 +1,6 @@
 [project]
 name = "blackcortex-gpt-cli"
-version = "1.2.0"
+version = "1.2.1"
 description = "Terminal-based GPT CLI with memory, markdown, and stream support"
 keywords = ["gpt", "cli", "terminal", "openai"]
 readme = "README.md"
