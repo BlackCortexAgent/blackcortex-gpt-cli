@@ -42,8 +42,14 @@ def reset_memory(memory_path: str) -> tuple[str, list]:
     Delete memory file if it exists, and return an empty summary and message list.
     """
     if os.path.exists(memory_path):
-        os.remove(memory_path)
-        console.print("[bold yellow]🧹 Memory file has been reset.[/bold yellow]\n")
+        try:
+            os.remove(memory_path)
+            console.print("[bold yellow]🧹 Memory file has been reset.[/bold yellow]\n")
+        except PermissionError:
+            console.print(
+                "[bold red]⚠️ Failed to reset memory file due to permission error.[/bold red]"
+            )
+            return "", []
     else:
         console.print("[blue]ℹ️ No memory file to reset.[/blue]\n")
     return "", []
@@ -62,6 +68,10 @@ def summarize_recent(
     Generate a new summary from the recent messages and clear the recent_messages.
     Returns updated (rolling_summary, recent_messages).
     """
+    if not recent_messages:
+        save_memory(memory_path, rolling_summary, [])
+        return rolling_summary, []
+
     batch = recent_messages[-(memory_limit * 2) :]
     summary_prompt = (
         f"Here is the current summary of our conversation:\n{rolling_summary}\n\n"
@@ -86,6 +96,6 @@ def summarize_recent(
         new_summary = response.choices[0].message.content.strip()
         save_memory(memory_path, new_summary, [])
         return new_summary, []
-    except OpenAIError as e:
+    except (OpenAIError, Exception) as e:
         console.print(f"[bold red]Summary failed:[/bold red] {e}")
         return rolling_summary, recent_messages
