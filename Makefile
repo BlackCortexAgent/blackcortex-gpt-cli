@@ -3,11 +3,8 @@ venv: ## Create virtualenv and install in editable mode with dev dependencies
 	python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 
 # === Formatting ===
-fmt: ## Run Ruff to auto-fix lint issues
-	ruff check core gpt.py --fix
-
-format: ## Run autopep8 aggressive formatting
-	autopep8 --in-place --aggressive --aggressive gpt.py core/*.py
+format: ## Run Ruff to auto-fix lint issues
+	ruff check blackcortex_cli --fix
 
 # === Clean, Build, Publish ===
 clean: ## Remove build artifacts
@@ -16,8 +13,8 @@ clean: ## Remove build artifacts
 build: clean ## Build sdist and wheel into dist/
 	python -m build
 
-lint: ## Run Pylint on main entrypoint and core
-	pylint core gpt.py
+lint: ## Run Pylint on blackcortex_cli
+	pylint blackcortex_cli --fail-under=9.0
 
 test: ## Run pytest on the tests/ directory
 	pytest tests
