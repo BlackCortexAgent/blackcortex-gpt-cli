@@ -30,6 +30,7 @@ from blackcortex_cli.commands import (
     command_set_key,
     command_uninstall,
     command_update,
+    command_version,
 )
 from blackcortex_cli.config import (
     api_key,
@@ -232,6 +233,7 @@ def handle_early_exits(args) -> bool:
         "ping": lambda: command_ping(api_key),
         "log": lambda: command_log(log_file),
         "clear_log": lambda: command_clear_log(log_file),
+        "version": lambda: command_version(),
     }
 
     for arg_name, handler in handlers.items():
@@ -264,7 +266,17 @@ def main():
     )
     parser.set_defaults(stream=False)
 
-    for flag in ["reset", "summary", "env", "ping", "log", "clear_log", "update", "uninstall"]:
+    for flag in [
+        "reset",
+        "summary",
+        "env",
+        "ping",
+        "log",
+        "clear_log",
+        "update",
+        "uninstall",
+        "version",
+    ]:
         parser.add_argument(
             f"--{flag.replace('_', '-')}",
             dest=flag,

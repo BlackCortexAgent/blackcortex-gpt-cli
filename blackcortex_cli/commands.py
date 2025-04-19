@@ -85,12 +85,9 @@ def command_uninstall():
 
 
 def command_version():
-    """Display the current version and project info."""
+    """Display the current version."""
     meta = read_project_metadata()
-    console.print(
-        f"[bold green]{meta['name']}[/bold green] "
-        f"v[cyan]{meta['version']}[/cyan] — {meta['description'] or 'No description.'}"
-    )
+    console.print(meta["version"])
 
 
 def command_set_key(api_key):
