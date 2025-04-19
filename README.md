@@ -1,4 +1,5 @@
 # BLACKCORTEX GPT CLI
+[![Check (Lint + Test)](https://github.com/BlackCortexAgent/blackcortex-gpt-cli/actions/workflows/check.yml/badge.svg)](https://github.com/BlackCortexAgent/blackcortex-gpt-cli/actions/workflows/check.yml)
 [![Publish to PyPI](https://github.com/BlackCortexAgent/blackcortex-gpt-cli/actions/workflows/publish.yml/badge.svg)](https://github.com/BlackCortexAgent/blackcortex-gpt-cli/actions/workflows/publish.yml)
 
 ### A Conversational Assistant for the Terminal
