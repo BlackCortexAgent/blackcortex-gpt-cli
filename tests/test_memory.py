@@ -58,9 +58,10 @@ def test_reset_memory_permission_error(temp_memory_file):
     """Simulate permission error when trying to delete a memory file."""
     temp_memory_file.touch()
 
-    with patch("os.remove", side_effect=PermissionError), patch(
-        "blackcortex_cli.memory.console.print"
-    ) as mock_print:
+    with (
+        patch("os.remove", side_effect=PermissionError),
+        patch("blackcortex_cli.memory.console.print") as mock_print,
+    ):
         summary, recent = reset_memory(str(temp_memory_file))
         mock_print.assert_called_once_with(
             "[bold red]⚠️ Failed to reset memory file due to permission error.[/bold red]"

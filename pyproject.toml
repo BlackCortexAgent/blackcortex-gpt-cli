@@ -50,20 +50,42 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 packages = ["blackcortex_cli"]
 
-# Ruff (formerly in ruff.toml)
 [tool.ruff]
-fix = true
+target-version = "py312"
 line-length = 100
-target-version = "py38"
+indent-width = 4
+exclude = [
+  ".git",
+  ".venv",
+  "dist",
+  "build",
+  "__pycache__",
+]
+preview = false
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I", "SIM", "UP", "C90"]
+ignore = [
+  "D100",    # Missing docstring in public module
+  "D203",    # Conflicts with D211
+  "D213",    # Conflicts with D212
+  "S101",    # Allow use of `assert` in tests
+  "CPY001",  # Copyright header not needed
+  "INP001",  # Allow implicit namespace packages
+  "ANN001", "ANN201",  # Missing type annotations
+  "PTH118", "PTH123",  # pathlib enforcement
+  "FURB101",           # force .read_text
+  "UP015",             # Unnecessary open mode
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["D100", "S101", "ANN001", "ANN201"]
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
-
-[tool.ruff.lint]
-select = ["E", "F", "W", "I", "C90"]
-ignore = ["E501"]
-preview = true
-
-[tool.ruff.lint.mccabe]
-max-complexity = 10
+line-ending = "auto"
+skip-magic-trailing-comma = false
+docstring-code-format = true
+docstring-code-line-length = 100
+preview = false

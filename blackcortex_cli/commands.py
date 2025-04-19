@@ -7,8 +7,8 @@ import os
 import pathlib
 import shutil
 import subprocess
-
 import tomllib
+
 from openai import OpenAI, OpenAIError
 from prompt_toolkit import prompt
 from rich.console import Console
