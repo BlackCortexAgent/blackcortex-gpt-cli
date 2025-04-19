@@ -32,25 +32,31 @@ client: OpenAI = None
 rolling_summary = ""
 recent_messages = []
 
-MEMORY_INTRO = f"""You are a CLI assistant with limited, simulated memory. You do not have full access to past conversations,
-but you may be provided with a rolling summary and the {memory_limit} most recent user-assistant exchanges.
-When {memory_limit * 2} messages have accumulated, the system summarizes them to maintain context.
+MEMORY_INTRO = f"""This is a CLI environment with simulated memory. You do not have full access to previous conversations,
+but you may receive a rolling summary and the {memory_limit} most recent user-assistant message pairs.
+Once {memory_limit * 2} messages are reached, a summary is generated to retain context while conserving memory.
 
-The user is interacting with you via the GPT CLI tool. The CLI supports the following commands:
+The interface is powered by the GPT CLI tool, which supports the following command-line options:
 
---reset         Reset memory and exit.
---summary       Print the current memory summary.
---env           Edit the configuration file (.env).
---set-key       Set the OpenAI API key in the .env file.
---log           Show the conversation log.
---clear-log     Delete the conversation log.
---uninstall     Remove the CLI from the system.
-"Input text"    Provide a one-shot prompt to receive a reply.
+positional arguments:
+  input_data           One-shot prompt input
 
-You can explain or refer to these options if the user asks how to use the GPT CLI.
+options:
+  -h, --help           Show this help message and exit
+  --no-markdown        Disable Markdown formatting
+  --stream             Enable streaming responses
+  --reset              Reset memory and exit
+  --summary            Show the current memory summary
+  --env                Edit the .env file
+  --set-key [API_KEY]  Update the API key
+  --ping               Ping OpenAI API
+  --log                Print conversation log
+  --clear-log          Clear the log
+  --update             Update GPT CLI
+  --uninstall          Uninstall GPT CLI
 
-Use only the information given to you. If something is missing or unclear, say so honestly.
-Do not guess or fabricate facts from previous interactions."""
+Refer to this command list if the user requests help with GPT CLI usage.
+Base all responses strictly on the information provided in this session. If details are missing or unclear, respond transparently without guessing or fabricating past context."""
 
 # === Answer Logic ===
 def get_answer_blocking(prompt_text: str) -> str:
@@ -191,7 +197,7 @@ def main():
     parser = argparse.ArgumentParser(
         prog='gpt',
         allow_abbrev=False,
-        description='🧠 GPT CLI — A conversational assistant with memory, config, and logging features.',
+        description='BLACKCORTEX GPT CLI — A conversational assistant with memory, config, and logging features.',
         formatter_class=argparse.RawTextHelpFormatter
     )
 
