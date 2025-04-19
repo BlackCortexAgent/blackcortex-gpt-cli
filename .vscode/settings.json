@@ -1,6 +1,13 @@
 {
-    "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-        "source.fixAll.ruff": "explicit"
+        "source.fixAll": "explicit"
+    },
+    "editor.formatOnSave": true,
+
+    "python.linting.enabled": true,
+    "python.linting.ruffEnabled": true,
+
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff"
     }
 }
