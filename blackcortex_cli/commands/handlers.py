@@ -38,11 +38,27 @@ def read_project_metadata():
 
 
 def command_env():
-    """Open the .env configuration file in the user's default editor."""
-    os.makedirs(os.path.dirname(ENV_PATH), exist_ok=True)
-    editor = os.getenv("EDITOR", "nano")
+    """Open the .env configuration file in the user's default editor with secure permissions."""
     try:
+        os.makedirs(os.path.dirname(ENV_PATH), exist_ok=True)
+        if not os.path.exists(ENV_PATH):
+            with open(ENV_PATH, "a", encoding="utf-8"):
+                pass
+            os.chmod(ENV_PATH, 0o600)
+    except OSError as e:
+        console.print(f"[bold red]❌ Failed to prepare .env file:[/bold red] {e}")
+        return
+
+    try:
+        before = os.stat(ENV_PATH).st_mtime
+        editor = os.getenv("EDITOR", "nano")
         subprocess.run([editor, ENV_PATH], check=True)
+        after = os.stat(ENV_PATH).st_mtime
+        os.chmod(ENV_PATH, 0o600)
+        if after != before:
+            console.print("[bold green]✅ .env file updated.[/bold green]")
+        else:
+            console.print("[bold yellow]ℹ️  No changes made to .env file.[/bold yellow]")
     except Exception as e:
         console.print(f"[bold red]❌ Failed to open editor:[/bold red] {e}")
 
@@ -101,14 +117,18 @@ def command_set_key(api_key):
         console.print(
             "[bold yellow]🔐 No API key provided. Please enter your OpenAI API key:[/bold yellow]"
         )
-        api_key = prompt("API Key: ").strip()
+        try:
+            api_key = prompt("API Key: ").strip()
+        except (KeyboardInterrupt, EOFError):
+            console.print("[bold red]❌ API key prompt cancelled.[/bold red]")
+            return
 
     console.print("[bold cyan]🔑 Validating API key...[/bold cyan]")
     try:
         temp_client = OpenAI(api_key=api_key)
         temp_client.models.list()
-    except OpenAIError as e:
-        console.print(f"[bold red]❌ Invalid API key:[/bold red] {e}")
+    except OpenAIError:
+        console.print("[bold red]❌ Invalid API key[/bold red]")
         return
 
     try:
