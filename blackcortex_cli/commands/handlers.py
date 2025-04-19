@@ -18,17 +18,23 @@ ENV_PATH = os.path.expanduser("~/.gpt-cli/.env")
 
 
 def read_project_metadata():
-    pyproject_path = pathlib.Path(__file__).parent.parent / "pyproject.toml"
-    with open(pyproject_path, "rb") as f:
-        data = tomllib.load(f)
+    """Safely locate and read pyproject.toml by walking up the directory tree."""
+    current = pathlib.Path(__file__).resolve().parent
 
-    project = data.get("project", {})
-    return {
-        "name": project.get("name"),
-        "version": project.get("version"),
-        "description": project.get("description"),
-        "authors": project.get("authors"),
-    }
+    for parent in [current, *current.parents]:
+        candidate = parent / "pyproject.toml"
+        if candidate.exists():
+            with open(candidate, "rb") as f:
+                data = tomllib.load(f)
+            project = data.get("project", {})
+            return {
+                "name": project.get("name"),
+                "version": project.get("version"),
+                "description": project.get("description"),
+                "authors": project.get("authors"),
+            }
+
+    raise FileNotFoundError("❌ pyproject.toml not found in this or any parent directory.")
 
 
 def command_env():
