@@ -32,6 +32,7 @@ dev = [
   "pre-commit",
   "pylint",
   "pytest",
+  "pytest-cov",
   "pytest-testdox",
   "ruff",
   "setuptools",

@@ -163,7 +163,7 @@ We welcome all contributions!
 ```bash
 git clone https://github.com/BlackCortexAgent/blackcortex-gpt-cli.git
 cd blackcortex-gpt-cli
-make install
+make dev
 ```
 
 Run tests:
@@ -182,15 +182,6 @@ make format
 
 Use `make check` to lint, test, build, and validate in `.venv`.  
 Use `make ci-release` for system Python (e.g., CI/CD pipelines).
-
-### ✅ Pre-commit Hook
-
-We use [pre-commit](https://pre-commit.com) for consistent formatting:
-
-```bash
-pre-commit install
-pre-commit run --all-files
-```
 
 ### 📄 See [CONTRIBUTING.md](CONTRIBUTING.md) for full details.
 
