@@ -28,13 +28,15 @@ dependencies = [
 # Development-only dependencies
 [project.optional-dependencies]
 dev = [
+  "build >=1.0.3,<2.0.0",
+  "pre-commit >=3.6.0,<4.0.0",
   "pylint >=3.0.0,<4.0.0",
   "pytest >=7.4.0,<8.0.0",
-  "build >=1.0.3,<2.0.0",
-  "twine >=4.0.2,<5.0.0",
+  "pytest-testdox >=3.0.0,<4.0.0",
   "ruff >=0.3.0,<1.0.0",
-  "pre-commit >=3.6.0,<4.0.0",
-  "pytest-testdox >=3.0.0,<4.0.0"
+  "setuptools >=61.0.0",
+  "twine >=4.0.2,<5.0.0",
+  "wheel >=0.40.0"
 ]
 
 # CLI entry point
