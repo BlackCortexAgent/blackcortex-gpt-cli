@@ -2,31 +2,38 @@
 name = "blackcortex-gpt-cli"
 version = "1.2.0"
 description = "Terminal-based GPT CLI with memory, markdown, and stream support"
+keywords = ["gpt", "cli", "terminal", "openai"]
 readme = "README.md"
 requires-python = ">=3.8"
 license = { file = "LICENSE" }
 authors = [
   { name = "Konijima", email = "konijima@blackcortex.net" }
 ]
-
-# Core dependencies (from requirements.txt)
-dependencies = [
-  "openai",
-  "rich",
-  "prompt_toolkit",
-  "python-dotenv"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Libraries :: Python Modules"
 ]
 
-# Development-only dependencies (from dev-requirements.txt)
+# Core dependencies
+dependencies = [
+  "openai >=1.3.5,<2.0.0",
+  "rich >=13.0.0,<14.0.0",
+  "prompt_toolkit >=3.0.36,<4.0.0",
+  "python-dotenv >=1.0.0,<2.0.0"
+]
+
+# Development-only dependencies
 [project.optional-dependencies]
 dev = [
-  "pylint",
-  "pytest",
-  "build",
-  "twine",
-  "ruff",
-  "autopep8",
-  "pre-commit"
+  "pylint >=3.0.0,<4.0.0",
+  "pytest >=7.4.0,<8.0.0",
+  "build >=1.0.3,<2.0.0",
+  "twine >=4.0.2,<5.0.0",
+  "ruff >=0.3.0,<1.0.0",
+  "pre-commit >=3.6.0,<4.0.0"
 ]
 
 # CLI entry point
@@ -44,6 +51,7 @@ packages = ["blackcortex_cli"]
 
 # Ruff (formerly in ruff.toml)
 [tool.ruff]
+fix = true
 line-length = 100
 target-version = "py38"
 
