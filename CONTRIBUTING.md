@@ -16,9 +16,9 @@ cd blackcortex-gpt-cli
 make install
 ```
 
-> This creates a `.venv`, installs dependencies, and links the CLI.
+> This creates a `.venv`, installs dependencies, and sets up pre-commit hooks.
 
-### 2. Activate Environment
+### 2. Activate the Virtual Environment
 
 ```bash
 source .venv/bin/activate
@@ -28,49 +28,55 @@ source .venv/bin/activate
 
 ## 🧪 Testing
 
-Run tests with:
+Run the full test suite with:
 
 ```bash
 make test
 ```
 
-Tests use `pytest` with `pytest-testdox` for clean output.
+Tests use `pytest` with `pytest-testdox` for clean, readable output.
 
 ---
 
-## 🧼 Formatting and Linting
+## 🧼 Linting and Formatting
 
-We use [Ruff](https://docs.astral.sh/ruff/) for linting and formatting.
+We use [Ruff](https://docs.astral.sh/ruff/) and `pylint` for code quality and formatting.
 
-### Format code:
+### Auto-format code:
 
 ```bash
 make format
 ```
 
-### Lint code:
+### Run linter:
 
 ```bash
 make lint
 ```
 
-### Full check (lint + test + build):
+---
+
+## ✅ Full Local Check
+
+To run all checks before a commit or release:
 
 ```bash
 make check
 ```
 
+This runs lint, tests, builds the package, and validates it with Twine.
+
 ---
 
-## ✅ Pre-commit Hooks
+## 🪝 Pre-commit Hooks
 
-Set up [pre-commit](https://pre-commit.com) to enforce formatting and quality before each commit:
+We use [pre-commit](https://pre-commit.com) to enforce formatting and standards:
 
 ```bash
 pre-commit install
 ```
 
-You can run hooks manually with:
+Run hooks manually with:
 
 ```bash
 pre-commit run --all-files
@@ -81,19 +87,33 @@ pre-commit run --all-files
 ## ✏️ Making Contributions
 
 - Add or update tests in the `tests/` directory
-- Follow the existing CLI pattern (see `gpt.py`, `commands.py`)
+- Follow CLI structure in `gpt.py` and `commands.py`
 - Use `config.py` for environment-based settings
-- Use `memory.py` for memory logic; it is shared across CLI sessions
-- Run `make format` before submitting a PR
+- Use `memory.py` for memory logic (persistent JSON + summarization)
+- Run `make format && make lint` before submitting your PR
+
+---
+
+## 🚀 CI/CD
+
+Our GitHub Actions workflows ensure:
+
+- Every PR is linted, tested, and validated (`check.yml`)
+- Tagged releases are built and published to PyPI (`publish.yml`)
+- Contributors can run CI logic locally using:
+
+```bash
+make ci-release
+```
 
 ---
 
 ## 📜 Licensing
 
-All contributions are licensed under the terms of the [MIT License](LICENSE).
+By contributing, you agree that your code is licensed under the [MIT License](LICENSE).
 
 ---
 
 ## 🙏 Thank You
 
-Thank you for contributing to `blackcortex-gpt-cli`!
+We appreciate every issue, suggestion, and PR. Thank you for helping improve `blackcortex-gpt-cli`!
