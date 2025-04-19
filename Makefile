@@ -8,6 +8,8 @@ install: ## Create virtualenv and install in editable mode with dev dependencies
 	$(VENV_BIN)/pip install --upgrade pip setuptools wheel
 	@echo "📦 Installing project in editable mode with dev dependencies..."
 	$(VENV_BIN)/pip install -e ".[dev]"
+	@echo "🪝 Installing pre-commit hooks..."
+	$(VENV_BIN)/pre-commit install
 
 # === Uninstall ===
 uninstall: ## Uninstall the editable package and remove egg-info
