@@ -6,7 +6,27 @@ on:
       - "v*.*.*"
 
 jobs:
+  lint:
+    name: Ruff Lint Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Run Ruff check (fail on lint)
+        run: ruff check .
+
   build:
+    name: Build Package
+    needs: lint # ⬅️ Ensure lint passes before building
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -30,11 +50,12 @@ jobs:
           path: dist/*
 
   publish:
+    name: Publish to PyPI
     needs: build
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/project/konijima-gpt-cli
+      url: https://pypi.org/project/blackcortex-gpt-cli
     permissions:
       id-token: write
       contents: read
@@ -49,4 +70,3 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
-          # repository-url: https://test.pypi.org/legacy/   # uncomment for TestPyPI

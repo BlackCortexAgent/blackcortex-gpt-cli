@@ -1,0 +1,16 @@
+include README.md
+include LICENSE
+include pyproject.toml
+
+recursive-include blackcortex_cli *.py
+
+global-exclude *.pyc __pycache__ *.log .env
+
+prune .git
+prune .github
+prune .ruff_cache
+prune .pytest_cache
+prune .venv
+prune build
+prune dist
+prune tests

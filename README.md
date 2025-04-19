@@ -1,87 +1,67 @@
-# 🧠 GPT CLI Tool with Persistent Memory and Streaming
-[![Publish to PyPI](https://github.com/Konijima/gpt-cli/actions/workflows/publish.yml/badge.svg)](https://github.com/Konijima/gpt-cli/actions/workflows/publish.yml)
+# BLACKCORTEX GPT CLI
+[![Publish to PyPI](https://github.com/BlackCortexAgent/blackcortex-gpt-cli/actions/workflows/publish.yml/badge.svg)](https://github.com/BlackCortexAgent/blackcortex-gpt-cli/actions/workflows/publish.yml)
 
-A terminal-based GPT assistant powered by the OpenAI API, featuring:
+### A Conversational Assistant for the Terminal
 
-- 🔁 **Persistent memory** across sessions with summarization
-- 🌊 **Streaming output** (optional)
-- 🧾 **Command history and logging**
-- 🧠 **Customizable prompt and model**
-- 🔐 **Secure `.env` configuration**
+A terminal-based GPT assistant powered by the OpenAI API, developed by [Konijima](https://github.com/Konijima) and now maintained under the [BlackCortex](https://github.com/BlackCortexAgent/) organization.
 
----
+## Features
 
-## 📦 Features
+- Persistent memory across sessions with summarization
+- Streaming output support
+- Command history and logging
+- Configurable prompt, model, and temperature
+- `.env`-based secure configuration
 
-- Conversational memory with summarization after 20 messages
-- Markdown-formatted input/output in terminal
-- Command history with autocompletion
-- Optional streaming mode (prints as it's generated)
-- Command-line and one-shot mode
-- Log file support for auditing
+## Installation
 
----
-
-## 🚀 Installation
-
-Install the GPT CLI via pip or pipx. Requires Python 3.8+.
+Requires **Python 3.8+**.
 
 ### Using PyPI
 
 ```bash
-pip install konijima-gpt-cli
+pip install blackcortex-gpt-cli
 ```
 
 ### Using pipx (recommended)
 
 ```bash
-pipx install konijima-gpt-cli
+pipx install blackcortex-gpt-cli
 ```
 
-### From GitHub (install directly from source)
+### From GitHub
 
 ```bash
-# Install directly from the GitHub repo to avoid PyPI conflicts
-pip install git+https://github.com/Konijima/gpt-cli.git#egg=konijima-gpt-cli
+pip install git+https://github.com/BlackCortexAgent/blackcortex-gpt-cli.git
 # or with pipx
-pipx install git+https://github.com/Konijima/gpt-cli.git#egg=konijima-gpt-cli
+pipx install git+https://github.com/BlackCortexAgent/blackcortex-gpt-cli.git
 ```
 
 ### Development Installation
 
 ```bash
-git clone https://github.com/Konijima/gpt-cli.git
-cd gpt-cli
+git clone https://github.com/BlackCortexAgent/blackcortex-gpt-cli.git
+cd blackcortex-gpt-cli
 pip install .
 ```
 
-### Update
+### Updating
 
 ```bash
-pip install --upgrade konijima-gpt-cli
+pip install --upgrade blackcortex-gpt-cli
 # or
-pipx upgrade konijima-gpt-cli
+pipx upgrade blackcortex-gpt-cli
 ```
 
-### Uninstallation
+## Environment Setup
 
-```bash
-pip uninstall konijima-gpt-cli
-# or
-pipx uninstall konijima-gpt-cli
-```
-
----
-
-## 🛠️ Environment Setup
-
-A `.env` file is required to store your API key and configuration.
+Create a `.env` file to configure your API and options:
 
 ```bash
 touch ~/.gpt-cli/.env
 ```
 
-### Sample `.env` File
+### Sample `.env`
 
 ```env
 OPENAI_API_KEY=your-api-key-here
@@ -95,138 +75,100 @@ OPENAI_MEMORY_PATH=~/.gpt_memory.json
 OPENAI_STREAM_ENABLED=false
 ```
 
----
+## Usage
 
-## 🔧 Usage
-
-After installation, you can use the `gpt` command globally.
-
-### Interactive Mode
+After installation, use the `gpt` command globally.
 
 ```bash
-gpt
+gpt [-h] [--no-markdown] [--stream] [--reset] [--summary] [--env]
+    [--set-key [API_KEY]] [--ping] [--log] [--clear-log]
+    [--update] [--uninstall] [--version] [input_data ...]
 ```
 
-You’ll enter a REPL-like interface:
+### Positional Arguments
+
+- `input_data` – One-shot prompt input. Example:
+  ```bash
+  gpt "Summarize the history of aviation"
+  ```
+
+### Options
+
+- `-h, --help` — Show help message and exit
+- `--no-markdown` — Disable Markdown formatting in output
+- `--stream` — Enable live token streaming during response
+- `--reset` — Reset memory and exit
+- `--summary` — Display current conversation summary
+- `--env` — Edit the `.env` file
+- `--set-key [API_KEY]` — Update your OpenAI API key
+- `--ping` — Test connection with OpenAI API
+- `--log` — Show the full conversation log
+- `--clear-log` — Clear the conversation log file
+- `--update` — Update GPT CLI to the latest version
+- `--uninstall` — Uninstall GPT CLI completely
+- `--version` — Display the current version
+
+## Environment Configuration
+
+The GPT CLI loads settings from two locations:
+
+1. `.env` file in the current working directory (if present)
+2. `~/.gpt-cli/.env` (default persistent configuration)
+
+You can configure model behavior, memory, logging, and streaming options.
+
+### Sample `.env` File
+
+```env
+OPENAI_API_KEY=your-api-key-here             # Required
+OPENAI_MODEL=gpt-4o                          # Model ID (default: gpt-4o)
+OPENAI_DEFAULT_PROMPT=You are a helpful assistant.
+OPENAI_LOGFILE=~/.gpt.log                    # Log file location
+OPENAI_TEMPERATURE=0.5                       # Response randomness (default: 0.5)
+OPENAI_MAX_TOKENS=4096                       # Max response tokens
+OPENAI_MAX_SUMMARY_TOKENS=2048               # Max tokens for memory summarization
+OPENAI_MEMORY_PATH=~/.gpt_memory.json        # Path to memory file
+OPENAI_MEMORY_LIMIT=10                       # Number of recent messages stored (default: 10)
+OPENAI_STREAM_ENABLED=false                  # Enable token-by-token streaming (true/false)
+```
+
+> Use `gpt --env` to open and edit the `.env` file in your terminal editor.
+
+## Memory System
+
+Memory includes:
+
+- Rolling conversation summary
+- The 10 most recent messages
+
+Older messages are summarized once the limit is reached. Use `--reset` to clear memory.
+
+## Troubleshooting
+
+- **Missing API key**: Check `.env` for `OPENAI_API_KEY`
+- **Client init failed**: Verify internet and credentials
+- **Token limit exceeded**: Reduce input size or use summarization
+
+## Interactive Example Output
 
 ```bash
-🧠 GPT CLI is ready. Type your question or 'exit' to quit.
+You: Tell me a joke about databases
+
+GPT: Why did the database break up with the spreadsheet?
+
+Because it couldn't handle the rows of emotions.
+────────────────────────────────────────────────────────
 ```
 
-### One-Shot Mode
+## License
 
-```bash
-gpt "Translate 'hello' to French"
-```
+This project is licensed under the **MIT License**, an OSI-approved open source license that permits the following:
 
-### From Pipe Input
+- ✅ Free use for personal, academic, or commercial purposes
+- ✅ Permission to modify, merge, publish, and distribute the software
+- ✅ Usage with or without attribution (attribution encouraged but not required)
+- ✅ No warranty is provided — use at your own risk
 
-```bash
-echo "Write a haiku about the ocean" | gpt
-```
+## Credits
 
-### Reset Memory
-
-```bash
-gpt --reset
-```
-
-> This clears all saved memory and summaries, then exits.
-
-### Edit Environment Configuration
-
-```bash
-gpt --env
-```
-
-> Opens your `.env` file in your default terminal editor (e.g., `nano`, `vim`, or set via `$EDITOR`).
-
-### Uninstall
-
-```bash
-gpt --uninstall
-```
-
-> This command will completely remove the GPT CLI, including the .env file and virtual environment under ~/.gpt-cli, as well as the global gpt command from ~/.local/bin.
-
----
-
-## 🔐 Environment Variables (Full Reference)
-
-| Variable                     | Description                                         | Default                |
-|-----------------------------|-----------------------------------------------------|------------------------|
-| `OPENAI_API_KEY`            | **Required.** Your OpenAI API key                  | —                      |
-| `OPENAI_MODEL`              | Model to use (`gpt-4o`, `gpt-3.5-turbo`, etc.)     | `gpt-4o`               |
-| `OPENAI_DEFAULT_PROMPT`     | System prompt used at the start of each session    | (empty)                |
-| `OPENAI_LOGFILE`            | File path to log all interactions                  | `~/.gpt.log`           |
-| `OPENAI_TEMPERATURE`        | Sampling temperature (creativity vs determinism)   | `0.5`                  |
-| `OPENAI_MAX_TOKENS`         | Maximum tokens per response                        | `4096`                 |
-| `OPENAI_MAX_SUMMARY_TOKENS` | Max tokens when summarizing recent interactions    | `2048`                 |
-| `OPENAI_MEMORY_PATH`        | Path to memory file for summary + recent messages  | `~/.gpt_memory.json`   |
-| `OPENAI_STREAM_ENABLED`     | Enable streaming output (live typing)              | `false`                |
-
----
-
-## 📝 Log Format
-
-If `OPENAI_LOGFILE` is set, all prompts and responses are saved:
-
-```
-[2025-04-15 15:51:51] Prompt:
-Hello there
-
-Response:
-Hello there again! What would you like to explore or discuss today?
---------------------------------------------------------------------------------
-```
-
----
-
-## 🧹 Memory
-
-Memory consists of:
-
-- A **rolling summary** of conversation
-- The **10 most recent messages**
-
-When 20 messages accumulate, the tool summarizes them into the context summary.
-
-To reset memory:
-
-```bash
-gpt --reset
-```
-
----
-
-## ❓ Troubleshooting
-
-- ❌ *Missing API key*: Ensure `OPENAI_API_KEY` is set in `.env`
-- ❌ *Client failed to initialize*: Check internet and API credentials
-- 💭 *Too many tokens*: Try a smaller input or enable summarization
-
----
-
-## 🧪 Example Output
-
-```bash
-You:
-Write a joke about servers
-
-GPT:
-Why did the server go to therapy?
-
-Because it had too many unresolved requests.
-```
-
----
-
-## 📄 License
-
-MIT License
-
----
-
-## ✨ Credits
-
-Built with ❤️ by [Konijima](https://github.com/Konijima) and OpenAI’s GPT models.
+Originally created by [Konijima](https://github.com/Konijima), now maintained by the [BlackCortex](https://blackcortex.net/) team.
