@@ -5,26 +5,22 @@ here = pathlib.Path(__file__).parent
 
 long_description = (here / "README.md").read_text(encoding="utf-8")
 version = (here / "VERSION").read_text(encoding="utf-8").strip()
+requirements = (here / "requirements.txt").read_text(encoding="utf-8").splitlines()
 
 setup(
     # Unique distribution name to avoid PyPI conflicts
-    name="konijima-gpt-cli",
+    name="blackcortex-gpt-cli",
     version=version,
-    description="GPT CLI — A conversational assistant with memory, config, and logging features.",
+    description="BLACKCORTEX GPT CLI — A conversational assistant with memory, config, and logging features.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/Konijima/gpt-cli",
+    url="https://github.com/BlackCortexAgent/blackcortex-gpt-cli",
     author="Konijima",
-    author_email="",
+    author_email="konijima@blackcortex.net",
     license="MIT",
     packages=find_packages(),
     py_modules=["gpt"],
-    install_requires=[
-        "openai",
-        "rich",
-        "prompt_toolkit",
-        "python-dotenv",
-    ],
+    install_requires=requirements,
     entry_points={
         "console_scripts": [
             "gpt = gpt:main",
