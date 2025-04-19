@@ -1,21 +1,19 @@
-# 🔐 Security Policy
+# Security Policy
 
-## 🛠️ Supported Versions
+## Supported Versions
 
 The following table outlines which versions of **BlackCortex GPT CLI** currently receive security updates:
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.2.x   | ✅ :white_check_mark: |
-| 1.1.x   | ❌ :x:                |
-| 1.0.x   | ❌ :x:                |
-| < 1.0   | ❌ :x:                |
+| Version | Supported |
+| ------- | --------- |
+| 1.2.x   | ✅        |
+| < 1.2.x | ❌        |
 
 We recommend always using the latest release to benefit from all security patches and improvements.
 
 ---
 
-## 📩 Reporting a Vulnerability
+## Reporting a Vulnerability
 
 If you discover a security vulnerability in this project:
 
