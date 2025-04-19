@@ -29,6 +29,7 @@ def test_load_memory_nonexistent_path():
 
 
 def test_load_memory_corrupted_json(tmp_path):
+    """Test behavior when attempting to load a malformed JSON memory file."""
     path = tmp_path / "corrupt.json"
     path.write_text("{ invalid json")
     with patch("blackcortex_cli.memory.console.print") as mock_print:
@@ -39,7 +40,7 @@ def test_load_memory_corrupted_json(tmp_path):
 
 
 def test_save_memory_empty_data(temp_memory_file):
-    """Test saving memory with empty data."""
+    """Test saving empty summary and recent messages to file."""
     save_memory(str(temp_memory_file), "", [])
     with open(temp_memory_file, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -48,12 +49,13 @@ def test_save_memory_empty_data(temp_memory_file):
 
 
 def test_save_memory_sets_permissions(temp_memory_file):
+    """Ensure saved memory file is set to permissions 600 (user read/write only)."""
     save_memory(str(temp_memory_file), "sum", ["msg"])
     assert oct(os.stat(temp_memory_file).st_mode & 0o777) == "0o600"
 
 
 def test_reset_memory_permission_error(temp_memory_file):
-    """Test resetting memory when a permission error occurs."""
+    """Simulate permission error when trying to delete a memory file."""
     temp_memory_file.touch()
 
     with patch("os.remove", side_effect=PermissionError), patch(
@@ -68,7 +70,7 @@ def test_reset_memory_permission_error(temp_memory_file):
 
 
 def test_summarize_recent_empty_messages(temp_memory_file):
-    """Test summarizing recent messages when the recent_messages list is empty."""
+    """Test that summarization is skipped and memory is saved when no recent messages exist."""
     client = MagicMock()
     rolling_summary = "Initial summary"
     recent_messages = []
@@ -91,7 +93,7 @@ def test_summarize_recent_empty_messages(temp_memory_file):
 
 
 def test_summarize_recent_failure(temp_memory_file):
-    """Test summarizing recent messages when an error occurs."""
+    """Test fallback behavior when summarization API call fails."""
     client = MagicMock()
     client.chat.completions.create.side_effect = Exception("API error")
 
@@ -117,6 +119,7 @@ def test_summarize_recent_failure(temp_memory_file):
 
 
 def test_summarize_recent_success(temp_memory_file):
+    """Test successful summarization updates the memory file with the new summary."""
     client = MagicMock()
     mock_response = MagicMock()
     mock_response.choices[0].message.content.strip.return_value = "Updated summary"
