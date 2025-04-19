@@ -35,11 +35,11 @@ build: clean ## Build sdist and wheel into dist/
 
 lint: ## Run Pylint on blackcortex_cli
 	@echo "🔎 Running Pylint..."
-	pylint blackcortex_cli --fail-under=9.0
+	.venv/bin/pylint blackcortex_cli --fail-under=9.0
 
 test: ## Run pytest on the tests/ directory
 	@echo "🧪 Running tests..."
-	PYTHONPATH=./ pytest tests --testdox
+	PYTHONPATH=./ .venv/bin/pytest tests --testdox
 
 check: lint test build ## Lint, test, build, and validate distributions
 	@echo "✅ Running full project check (lint, test, build, validate)..."
