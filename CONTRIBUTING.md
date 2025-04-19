@@ -122,10 +122,10 @@ GitHub Actions automatically:
 - Lint and test every PR (`check.yml`)
 - Build and publish tagged releases to PyPI (`publish.yml`)
 
-You can replicate the release check locally with:
+You can replicate `make ci-release` locally with:
 
 ```bash
-make ci-release-venv
+make check
 ```
 
 ---
