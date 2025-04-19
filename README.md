@@ -44,15 +44,7 @@ pipx install git+https://github.com/BlackCortexAgent/blackcortex-gpt-cli.git
 ```bash
 git clone https://github.com/BlackCortexAgent/blackcortex-gpt-cli.git
 cd blackcortex-gpt-cli
-make install
-```
-
-## Environment Setup
-
-Create a `.env` file to configure your API and options:
-
-```bash
-touch ~/.gpt-cli/.env
+make dev
 ```
 
 ### Sample `.env`
@@ -69,7 +61,7 @@ OPENAI_MEMORY_PATH=~/.gpt_memory.json
 OPENAI_STREAM_ENABLED=false
 ```
 
-### 🧾 CLI Usage
+## CLI Usage
 
 After installation, use the `gpt` command globally.
 
@@ -104,21 +96,6 @@ The GPT CLI loads settings from two locations:
 2. `~/.gpt-cli/.env` (default persistent configuration)
 
 You can configure model behavior, memory, logging, and streaming options.
-
-### Sample `.env` File
-
-```env
-OPENAI_API_KEY=your-api-key-here             # Required
-OPENAI_MODEL=gpt-4o                          # Model ID (default: gpt-4o)
-OPENAI_DEFAULT_PROMPT=You are a helpful assistant.
-OPENAI_LOGFILE=~/.gpt.log                    # Log file location
-OPENAI_TEMPERATURE=0.5                       # Response randomness (default: 0.5)
-OPENAI_MAX_TOKENS=4096                       # Max response tokens
-OPENAI_MAX_SUMMARY_TOKENS=2048              # Max tokens for memory summarization
-OPENAI_MEMORY_PATH=~/.gpt_memory.json        # Path to memory file
-OPENAI_MEMORY_LIMIT=10                       # Number of recent messages stored (default: 10)
-OPENAI_STREAM_ENABLED=false                  # Enable token-by-token streaming (true/false)
-```
 
 > Use `gpt --env` to open and edit the `.env` file in your terminal editor.
 
