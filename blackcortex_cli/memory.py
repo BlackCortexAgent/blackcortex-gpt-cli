@@ -1,3 +1,9 @@
+"""
+Memory management for GPT-CLI.
+
+Includes functions to load, save, reset, and summarize conversational memory.
+"""
+
 import json
 import os
 
@@ -13,7 +19,7 @@ def load_memory(memory_path: str) -> tuple[str, list]:
     """
     if os.path.exists(memory_path):
         try:
-            with open(memory_path, "r") as f:
+            with open(memory_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 return data.get("summary", ""), data.get("recent", [])
         except json.JSONDecodeError:
@@ -26,7 +32,7 @@ def save_memory(memory_path: str, rolling_summary: str, recent_messages: list):
     """
     Save memory to the given path.
     """
-    with open(memory_path, "w") as f:
+    with open(memory_path, "w", encoding="utf-8") as f:
         json.dump({"summary": rolling_summary, "recent": recent_messages}, f, indent=2)
     os.chmod(memory_path, 0o600)
 
@@ -69,7 +75,8 @@ def summarize_recent(
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a summarizer that maintains a concise summary of a conversation.",
+                    "content": "You are a summarizer that maintains a concise "
+                    "summary of a conversation.",
                 },
                 {"role": "user", "content": summary_prompt},
             ],

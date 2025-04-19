@@ -1,3 +1,10 @@
+"""
+Configuration module for GPT-CLI.
+
+Loads environment variables, applies defaults,
+and expands user paths for runtime configuration.
+"""
+
 import os
 
 # === Load .env if available ===
@@ -27,9 +34,9 @@ api_key = os.getenv("OPENAI_API_KEY")
 model = os.getenv("OPENAI_MODEL", DEFAULT_MODEL)
 default_prompt = os.getenv("OPENAI_DEFAULT_PROMPT", DEFAULT_PROMPT)
 log_file = os.path.expanduser(os.getenv("OPENAI_LOGFILE", DEFAULT_LOG_PATH))
-temperature = float(os.getenv("OPENAI_TEMPERATURE", DEFAULT_TEMPERATURE))
-max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", DEFAULT_MAX_TOKENS))
-max_summary_tokens = int(os.getenv("OPENAI_MAX_SUMMARY_TOKENS", DEFAULT_MAX_SUMMARY_TOKENS))
+temperature = float(os.getenv("OPENAI_TEMPERATURE", str(DEFAULT_TEMPERATURE)))
+max_tokens = int(os.getenv("OPENAI_MAX_TOKENS", str(DEFAULT_MAX_TOKENS)))
+max_summary_tokens = int(os.getenv("OPENAI_MAX_SUMMARY_TOKENS", str(DEFAULT_MAX_SUMMARY_TOKENS)))
 memory_path = os.path.expanduser(os.getenv("OPENAI_MEMORY_PATH", DEFAULT_MEMORY_PATH))
-memory_limit = int(os.getenv("OPENAI_MEMORY_LIMIT", DEFAULT_MEMORY_LIMIT))
+memory_limit = int(os.getenv("OPENAI_MEMORY_LIMIT", str(DEFAULT_MEMORY_LIMIT)))
 stream_enabled = os.getenv("OPENAI_STREAM_ENABLED", DEFAULT_STREAM).lower() == "true"
