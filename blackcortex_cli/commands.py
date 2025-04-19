@@ -15,7 +15,7 @@ def command_env():
     env_path = os.path.expanduser("~/.gpt-cli/.env")
     os.makedirs(os.path.dirname(env_path), exist_ok=True)
     # Default to nano if EDITOR is not set
-    editor = os.getenv('EDITOR', 'nano')
+    editor = os.getenv("EDITOR", "nano")
     try:
         subprocess.run([editor, env_path], check=True)
     except Exception as e:
@@ -30,14 +30,13 @@ def command_update():
         if shutil.which("pipx"):
             subprocess.run(["pipx", "upgrade", "konijima-gpt-cli"], check=True)
         else:
-            subprocess.run(["pip", "install", "--upgrade",
-                           "konijima-gpt-cli"], check=True)
-        console.print(
-            "[bold green]✅ GPT CLI updated successfully.[/bold green]")
+            subprocess.run(["pip", "install", "--upgrade", "konijima-gpt-cli"], check=True)
+        console.print("[bold green]✅ GPT CLI updated successfully.[/bold green]")
     except Exception as e:
         console.print(f"[bold red]❌ Update failed:[/bold red] {e}")
         console.print(
-            "💡 You can manually upgrade with 'pip install --upgrade konijima-gpt-cli' or 'pipx upgrade konijima-gpt-cli'")
+            "💡 You can manually upgrade with 'pip install --upgrade konijima-gpt-cli' or 'pipx upgrade konijima-gpt-cli'"
+        )
 
 
 # === Run the CLI uninstall script ===
@@ -46,24 +45,23 @@ def command_uninstall():
     try:
         # Attempt pipx uninstall if available
         if shutil.which("pipx"):
-            subprocess.run(
-                ["pipx", "uninstall", "konijima-gpt-cli"], check=True)
+            subprocess.run(["pipx", "uninstall", "konijima-gpt-cli"], check=True)
         else:
-            subprocess.run(["pip", "uninstall", "-y",
-                           "konijima-gpt-cli"], check=True)
-        console.print(
-            "[bold green]✅ GPT CLI uninstalled successfully.[/bold green]")
+            subprocess.run(["pip", "uninstall", "-y", "konijima-gpt-cli"], check=True)
+        console.print("[bold green]✅ GPT CLI uninstalled successfully.[/bold green]")
     except Exception as e:
         console.print(f"[bold red]❌ Uninstall failed:[/bold red] {e}")
         console.print(
-            "💡 You can manually uninstall with 'pip uninstall konijima-gpt-cli' or 'pipx uninstall konijima-gpt-cli'")
+            "💡 You can manually uninstall with 'pip uninstall konijima-gpt-cli' or 'pipx uninstall konijima-gpt-cli'"
+        )
 
 
 # === Set and validate the OpenAI API key ===
 def command_set_key(api_key):
     if api_key is None:
         console.print(
-            "[bold yellow]🔐 No API key provided. Please enter your OpenAI API key:[/bold yellow]")
+            "[bold yellow]🔐 No API key provided. Please enter your OpenAI API key:[/bold yellow]"
+        )
         api_key = prompt("API Key: ").strip()
 
     console.print("[bold cyan]🔑 Validating API key...[/bold cyan]")
@@ -107,8 +105,7 @@ def command_ping(api_key):
         temp_client.models.list()
         console.print("[bold green]✅ OpenAI API is reachable.[/bold green]")
     except OpenAIError as e:
-        console.print(
-            f"[bold red]❌ Failed to reach OpenAI API:[/bold red] {e}")
+        console.print(f"[bold red]❌ Failed to reach OpenAI API:[/bold red] {e}")
 
 
 # === Print the full conversation log ===

@@ -3,6 +3,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.ruff_cache
+.pytest_cache
 
 # C extensions
 *.so
@@ -64,7 +66,6 @@ venv.bak/
 
 # IDE and editor folders
 .idea/
-.vscode/
 *.code-workspace
 *.sublime-project
 *.sublime-workspace

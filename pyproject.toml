@@ -1,6 +1,60 @@
-[build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
+[project]
+name = "blackcortex-gpt-cli"
+version = "1.2.0"
+description = "Terminal-based GPT CLI with memory, markdown, and stream support"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Konijima", email = "konijima@blackcortex.net" }
 ]
+
+# Core dependencies (from requirements.txt)
+dependencies = [
+  "openai",
+  "rich",
+  "prompt_toolkit",
+  "python-dotenv"
+]
+
+# Development-only dependencies (from dev-requirements.txt)
+[project.optional-dependencies]
+dev = [
+  "pylint",
+  "pytest",
+  "build",
+  "twine",
+  "ruff",
+  "autopep8",
+  "pre-commit"
+]
+
+# CLI entry point
+[project.scripts]
+gpt = "blackcortex_cli.gpt:main"
+
+# Build system configuration
+[build-system]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
+
+# If you rename core to blackcortex_cli, update here
+[tool.setuptools]
+packages = ["blackcortex_cli"]
+
+# Ruff (formerly in ruff.toml)
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "C90"]
+ignore = ["E501"]
+preview = true
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
