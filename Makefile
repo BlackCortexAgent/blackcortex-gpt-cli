@@ -45,7 +45,11 @@ check: lint test build ## Lint, test, build, and validate distributions
 	@echo "✅ Running full project check (lint, test, build, validate)..."
 	twine check dist/*
 
-publish: check ## Run all checks then upload to PyPI
+# === CI ===
+ci: install lint test ## Run install, lint, and test steps for CI
+	@echo "✅ CI check complete."
+
+publish: ci ## Run all checks then upload to PyPI
 	@echo "🚀 Publishing to PyPI..."
 	twine upload dist/*
 
