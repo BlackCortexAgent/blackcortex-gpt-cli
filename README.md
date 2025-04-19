@@ -169,7 +169,8 @@ make install
 Run tests:
 
 ```bash
-make test
+make test       # uses virtualenv (.venv)
+# or use 'make ci-release' if running outside .venv
 ```
 
 Lint and format:
@@ -178,6 +179,9 @@ Lint and format:
 make lint
 make format
 ```
+
+Use `make check` to lint, test, build, and validate in `.venv`.  
+Use `make ci-release` for system Python (e.g., CI/CD pipelines).
 
 ### ✅ Pre-commit Hook
 
