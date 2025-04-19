@@ -1,9 +1,11 @@
-import os
 import json
-from rich.console import Console
+import os
+
 from openai import OpenAI, OpenAIError
+from rich.console import Console
 
 console = Console()
+
 
 def load_memory(memory_path: str) -> tuple[str, list]:
     """
@@ -15,17 +17,21 @@ def load_memory(memory_path: str) -> tuple[str, list]:
                 data = json.load(f)
                 return data.get("summary", ""), data.get("recent", [])
         except json.JSONDecodeError:
-            console.print("[bold red]⚠️ Corrupted memory file. Resetting...[/bold red]")
+            console.print(
+                "[bold red]⚠️ Corrupted memory file. Resetting...[/bold red]")
             return "", []
     return "", []
+
 
 def save_memory(memory_path: str, rolling_summary: str, recent_messages: list):
     """
     Save memory to the given path.
     """
     with open(memory_path, 'w') as f:
-        json.dump({"summary": rolling_summary, "recent": recent_messages}, f, indent=2)
+        json.dump({"summary": rolling_summary,
+                  "recent": recent_messages}, f, indent=2)
     os.chmod(memory_path, 0o600)
+
 
 def reset_memory(memory_path: str) -> tuple[str, list]:
     """
@@ -33,10 +39,12 @@ def reset_memory(memory_path: str) -> tuple[str, list]:
     """
     if os.path.exists(memory_path):
         os.remove(memory_path)
-        console.print("[bold yellow]🧹 Memory file has been reset.[/bold yellow]\n")
+        console.print(
+            "[bold yellow]🧹 Memory file has been reset.[/bold yellow]\n")
     else:
         console.print("[blue]ℹ️ No memory file to reset.[/blue]\n")
     return "", []
+
 
 def summarize_recent(
     client: OpenAI,
