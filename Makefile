@@ -37,7 +37,7 @@ lint: ## Run Pylint on blackcortex_cli
 
 test: ## Run pytest on the tests/ directory
 	@echo "🧪 Running tests..."
-	pytest tests
+	PYTHONPATH=./ pytest tests
 
 check: lint test build ## Lint, test, build, and validate distributions
 	@echo "✅ Running full project check (lint, test, build, validate)..."
