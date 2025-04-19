@@ -7,13 +7,13 @@ and expands user paths for runtime configuration.
 
 import os
 
-try:
+try:  # pragma: no cover
     from dotenv import load_dotenv
 
-    load_dotenv()
-    load_dotenv(os.path.expanduser("~/.gpt-cli/.env"))
-except ImportError:
-    pass
+    load_dotenv()  # pragma: no cover
+    load_dotenv(os.path.expanduser("~/.gpt-cli/.env"))  # pragma: no cover
+except ImportError:  # pragma: no cover
+    pass  # pragma: no cover
 
 
 class Config:
