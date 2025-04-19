@@ -69,38 +69,32 @@ OPENAI_MEMORY_PATH=~/.gpt_memory.json
 OPENAI_STREAM_ENABLED=false
 ```
 
-## Usage
+### 🧾 CLI Usage
 
 After installation, use the `gpt` command globally.
 
-```bash
-gpt [-h] [--no-markdown] [--stream] [--reset] [--summary] [--env]
-    [--set-key [API_KEY]] [--ping] [--log] [--clear-log]
-    [--update] [--uninstall] [--version] [input_data ...]
-```
+#### **Positional Arguments**
 
-### Positional Arguments
+| Argument     | Description                |
+| ------------ | -------------------------- |
+| `input_data` | Send one-shot prompt input |
 
-- `input_data` – One-shot prompt input. Example:
-  ```bash
-  gpt "Summarize the history of aviation"
-  ```
+#### **Options**
 
-### Options
-
-- `-h, --help` — Show help message and exit
-- `--no-markdown` — Disable Markdown formatting in output
-- `--stream` — Enable live token streaming during response
-- `--reset` — Reset memory and exit
-- `--summary` — Display current conversation summary
-- `--env` — Edit the `.env` file
-- `--set-key [API_KEY]` — Update your OpenAI API key
-- `--ping` — Test connection with OpenAI API
-- `--log` — Show the full conversation log
-- `--clear-log` — Clear the conversation log file
-- `--update` — Update GPT CLI to the latest version
-- `--uninstall` — Uninstall GPT CLI completely
-- `--version` — Display the current version
+| Flag                                  | Description                                            |
+| ------------------------------------- | ------------------------------------------------------ |
+| `-h`, `--help`                        | Show this help message and exit                        |
+| `-m`, `--no-markdown`                 | Disable Markdown formatting in responses               |
+| `-s`, `--stream`                      | Stream assistant responses token-by-token              |
+| `-r`, `--reset`                       | Reset context memory                                   |
+| `-e`, `--env`                         | Open configuration file                                |
+| `-u`, `--update`                      | Update the CLI tool                                    |
+| `-x`, `--uninstall`                   | Uninstall the CLI tool                                 |
+| `-k [API_KEY]`, `--set-key [API_KEY]` | Set or update OpenAI API key (prompt if value omitted) |
+| `-p`, `--ping`                        | Test OpenAI API connectivity                           |
+| `-l`, `--log`                         | Display conversation log                               |
+| `-c`, `--clear-log`                   | Clear the conversation log                             |
+| `-v`, `--version`                     | Display current version                                |
 
 ## Environment Configuration
 
