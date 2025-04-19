@@ -13,6 +13,8 @@ uninstall: ## Uninstall the editable package and remove egg-info
 	.venv/bin/pip uninstall -y blackcortex-gpt-cli || echo "⚠️  Package not found or already uninstalled."
 	@echo "🗑️  Removing leftover egg-info..."
 	rm -rf blackcortex_gpt_cli.egg-info
+	@echo "🔥 Removing virtual environment..."
+	rm -rf .venv
 
 # === Formatting ===
 format: ## Run Ruff to auto-fix lint issues
