@@ -2,9 +2,15 @@ include README.md
 include VERSION
 include requirements.txt
 
-recursive-include . *.py
+recursive-include core *.py
+include gpt.py
 
-global-exclude *.pyc __pycache__ *.log *.egg-info .env
+global-exclude *.pyc __pycache__ *.log .env
+
 prune .git
 prune .github
 prune venv
+prune .venv
+prune build
+prune dist
+prune package.json

@@ -1,0 +1,16 @@
+{
+    "name": "blackcortex-gpt-cli",
+    "private": true,
+    "scripts": {
+        "venv": "python3 -m venv .venv && .venv/bin/pip install -r dev-requirements.txt",
+        "fmt": "ruff check core gpt.py --fix",
+        "format": "autopep8 --in-place --aggressive --aggressive gpt.py core/*.py",
+        "clean": "rm -rf dist build *.egg-info",
+        "build": "npm run clean && python -m build",
+        "lint": "pylint core gpt.py",
+        "test": "pytest tests",
+        "check": "npm run lint && npm run test && npm run build && twine check dist/*",
+        "publish": "npm run check && twine upload dist/*",
+        "inspect": "tar -tzf dist/*.tar.gz"
+    }
+}
