@@ -64,10 +64,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "-k",
         "--set-key",
+        dest="set_key",
         nargs="?",
-        const=None,
+        const="__PROMPT__",  # Sentinel value to signal interactive prompt
         metavar="API_KEY",
-        help="Set or update OpenAI API key",
+        help="Set or update OpenAI API key (prompt if value omitted)",
     )
     parser.add_argument("-p", "--ping", action="store_true", help="Test OpenAI API connectivity")
     parser.add_argument("-l", "--log", action="store_true", help="Display conversation log")
@@ -85,7 +86,7 @@ def handle_early_exits(args: argparse.Namespace) -> bool:
         "env": command_env,
         "update": command_update,
         "uninstall": command_uninstall,
-        "set_key": lambda: command_set_key(args.set_key),
+        "set_key": lambda: command_set_key(None if args.set_key == "__PROMPT__" else args.set_key),
         "ping": lambda: command_ping(config.api_key),
         "log": lambda: log_manager.show(),
         "clear_log": lambda: log_manager.clear(),
