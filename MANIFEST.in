@@ -13,4 +13,4 @@ prune venv
 prune .venv
 prune build
 prune dist
-prune package.json
+prune tests
