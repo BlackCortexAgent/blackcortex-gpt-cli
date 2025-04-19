@@ -1,7 +1,0 @@
-pylint
-pytest
-build
-twine
-ruff
-autopep8
-pre-commit
