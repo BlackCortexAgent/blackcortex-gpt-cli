@@ -12,7 +12,6 @@ import tomllib
 from openai import OpenAI, OpenAIError
 from prompt_toolkit import prompt
 from rich.console import Console
-from rich.markdown import Markdown
 
 console = Console()
 ENV_PATH = os.path.expanduser("~/.gpt-cli/.env")
@@ -135,33 +134,3 @@ def command_ping(api_key):
         console.print("[bold green]✅ OpenAI API is reachable.[/bold green]")
     except OpenAIError as e:
         console.print(f"[bold red]❌ Failed to reach OpenAI API:[/bold red] {e}")
-
-
-def command_log(log_file):
-    """Display the full conversation log from the specified file."""
-    if os.path.exists(log_file):
-        with open(log_file, "r", encoding="utf-8") as f:
-            console.print(f.read())
-    else:
-        console.print("[yellow]⚠️ No log file found.[/yellow]")
-
-
-def command_clear_log(log_file):
-    """Delete the conversation log file if it exists."""
-    if os.path.exists(log_file):
-        os.remove(log_file)
-        console.print("[bold green]🧹 Log file has been deleted.[/bold green]")
-    else:
-        console.print("[yellow]⚠️ No log file to delete.[/yellow]")
-
-
-def command_summary(rolling_summary: str, markdown: bool):
-    """Display the current rolling conversation summary."""
-    if rolling_summary:
-        console.print("[bold cyan]📋 Current Summary:[/bold cyan]\n")
-        if markdown:
-            console.print(Markdown(rolling_summary))
-        else:
-            console.print(rolling_summary)
-    else:
-        console.print("[yellow]⚠️ No summary available yet.[/yellow]")

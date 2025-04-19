@@ -4,11 +4,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from blackcortex_cli.memory import (
-    load_memory,
-    reset_memory,
-    save_memory,
-    summarize_recent,
+from blackcortex_cli.memory.context_memory import (
+    load_context_memory,
+    delete_context_memory,
+    save_context_memory,
+    summarize_context_memory,
 )
 
 
@@ -23,7 +23,7 @@ def temp_memory_file(tmp_path):
 
 def test_load_memory_nonexistent_path():
     """Test loading memory from a nonexistent path."""
-    summary, recent = load_memory("/nonexistent/path/memory.json")
+    summary, recent = load_context_memory("/nonexistent/path/memory.json")
     assert summary == ""
     assert recent == []
 
@@ -33,7 +33,7 @@ def test_load_memory_corrupted_json(tmp_path):
     path = tmp_path / "corrupt.json"
     path.write_text("{ invalid json")
     with patch("blackcortex_cli.memory.console.print") as mock_print:
-        summary, recent = load_memory(str(path))
+        summary, recent = load_context_memory(str(path))
         mock_print.assert_called_once()
         assert summary == ""
         assert recent == []
@@ -41,7 +41,7 @@ def test_load_memory_corrupted_json(tmp_path):
 
 def test_save_memory_empty_data(temp_memory_file):
     """Test saving empty summary and recent messages to file."""
-    save_memory(str(temp_memory_file), "", [])
+    save_context_memory(str(temp_memory_file), "", [])
     with open(temp_memory_file, "r", encoding="utf-8") as f:
         data = json.load(f)
     assert data["summary"] == ""
@@ -50,7 +50,7 @@ def test_save_memory_empty_data(temp_memory_file):
 
 def test_save_memory_sets_permissions(temp_memory_file):
     """Ensure saved memory file is set to permissions 600 (user read/write only)."""
-    save_memory(str(temp_memory_file), "sum", ["msg"])
+    save_context_memory(str(temp_memory_file), "sum", ["msg"])
     assert oct(os.stat(temp_memory_file).st_mode & 0o777) == "0o600"
 
 
@@ -62,7 +62,7 @@ def test_reset_memory_permission_error(temp_memory_file):
         patch("os.remove", side_effect=PermissionError),
         patch("blackcortex_cli.memory.console.print") as mock_print,
     ):
-        summary, recent = reset_memory(str(temp_memory_file))
+        summary, recent = delete_context_memory(str(temp_memory_file))
         mock_print.assert_called_once_with(
             "[bold red]⚠️ Failed to reset memory file due to permission error.[/bold red]"
         )
@@ -79,7 +79,7 @@ def test_summarize_recent_empty_messages(temp_memory_file):
     max_summary_tokens = 50
 
     with patch("blackcortex_cli.memory.save_memory") as mock_save:
-        new_summary, new_recent = summarize_recent(
+        new_summary, new_recent = summarize_context_memory(
             client,
             "test-model",
             str(temp_memory_file),
@@ -104,7 +104,7 @@ def test_summarize_recent_failure(temp_memory_file):
     max_summary_tokens = 50
 
     with patch("blackcortex_cli.memory.console.print") as mock_print:
-        new_summary, new_recent = summarize_recent(
+        new_summary, new_recent = summarize_context_memory(
             client,
             "test-model",
             str(temp_memory_file),
@@ -126,7 +126,7 @@ def test_summarize_recent_success(temp_memory_file):
     mock_response.choices[0].message.content.strip.return_value = "Updated summary"
     client.chat.completions.create.return_value = mock_response
 
-    new_summary, new_recent = summarize_recent(
+    new_summary, new_recent = summarize_context_memory(
         client,
         "gpt-4",
         str(temp_memory_file),
