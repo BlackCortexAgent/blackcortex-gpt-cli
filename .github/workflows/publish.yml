@@ -6,27 +6,8 @@ on:
       - "v*.*.*"
 
 jobs:
-  lint:
-    name: Ruff Lint Check
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.12"
-
-      - name: Install Ruff
-        run: pip install ruff
-
-      - name: Run Ruff check (fail on lint)
-        run: ruff check .
-
-  build:
-    name: Build Package
-    needs: lint # ⬅️ Ensure lint passes before building
+  release:
+    name: Build + Validate
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -38,11 +19,11 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install build tool
-        run: python -m pip install --upgrade build
+      - name: Install Make + build deps
+        run: sudo apt-get update && sudo apt-get install -y make
 
-      - name: Build sdist and wheel
-        run: python -m build --sdist --wheel --outdir dist
+      - name: Run release checks (lint, test, build)
+        run: make release
 
       - uses: actions/upload-artifact@v4
         with:
@@ -51,7 +32,7 @@ jobs:
 
   publish:
     name: Publish to PyPI
-    needs: build
+    needs: release
     runs-on: ubuntu-latest
     environment:
       name: pypi
