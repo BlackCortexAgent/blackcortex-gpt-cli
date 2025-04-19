@@ -1,0 +1,10 @@
+include README.md
+include VERSION
+include requirements.txt
+
+recursive-include . *.py
+
+global-exclude *.pyc __pycache__ *.log *.egg-info .env
+prune .git
+prune .github
+prune venv
