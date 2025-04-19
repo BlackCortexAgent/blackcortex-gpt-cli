@@ -5,5 +5,8 @@
   },
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "files.exclude": {
+    "**/__pycache__/": true
   }
 }
