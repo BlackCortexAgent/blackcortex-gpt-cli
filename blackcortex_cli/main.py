@@ -1,138 +1,125 @@
-#!/usr/bin/env python3
 """
-GPT CLI Entry Point
+Main entry point for the BlackCortex GPT CLI.
 
-This script launches a command-line interface for interacting with the OpenAI API.
-It supports interactive REPL or one-shot prompts, memory summarization, and various CLI options.
+This module initializes the CLI, parses command-line arguments, sets up the configuration,
+and either processes a one-shot command or starts the REPL interface.
 """
 
 import argparse
+import importlib
+import pkgutil
 import sys
 
-from openai import OpenAIError
-from rich.console import Console
-from rich.markdown import Markdown
-
-from blackcortex_cli.commands.handlers import (
-    command_env,
-    command_ping,
-    command_set_key,
-    command_uninstall,
-    command_update,
-    command_version,
-)
-from blackcortex_cli.config.loader import Config
-from blackcortex_cli.core.chat import ChatManager
-from blackcortex_cli.logging.manager import LogManager
+import blackcortex_cli.flags
+from blackcortex_cli.config.config import Config
+from blackcortex_cli.core.chat_manager import ChatManager
+from blackcortex_cli.core.context import Context
+from blackcortex_cli.core.flag_registry import flag_registry
+from blackcortex_cli.core.log_manager import LogManager
 from blackcortex_cli.repl import ReplRunner
+from blackcortex_cli.utils.console import console
 
-console = Console()
-config = Config()
-log_manager = LogManager(config.log_file)
-chat_manager: ChatManager = None
+
+def load_all_flags() -> None:
+    """
+    Dynamically load all flag modules from the flags package.
+
+    Iterates through modules in the blackcortex_cli.flags package and imports them,
+    registering their flags in the global flag registry.
+    """
+    for _, name, _ in pkgutil.iter_modules(blackcortex_cli.flags.__path__):
+        importlib.import_module(f"blackcortex_cli.flags.{name}")
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        prog="gpt",
-        allow_abbrev=False,
-        description="BLACKCORTEX GPT CLI — A conversational assistant with memory.",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+    """
+    Parse command-line arguments.
 
-    # Output and streaming options
+    Sets up the CLI parser, applies all registered flags, and returns parsed arguments.
+
+    Returns:
+        argparse.Namespace: Parsed command-line arguments.
+    """
+    parser = argparse.ArgumentParser(description="BlackCortex CLI")
     parser.add_argument(
-        "-m",
-        "--no-markdown",
-        dest="markdown",
-        action="store_false",
-        help="Disable Markdown formatting in responses",
+        "input_data", nargs="*", default="", help="Input text for one-shot command processing."
     )
-    parser.add_argument(
-        "-s",
-        "--stream",
-        dest="stream",
-        action="store_true",
-        help="Stream assistant responses token-by-token",
-    )
-
-    # CLI operational flags
-    parser.add_argument("-r", "--reset", action="store_true", help="Reset context memory")
-    parser.add_argument("-e", "--env", action="store_true", help="Open configuration file")
-    parser.add_argument("-u", "--update", action="store_true", help="Update the CLI tool")
-    parser.add_argument("-x", "--uninstall", action="store_true", help="Uninstall the CLI tool")
-    parser.add_argument(
-        "-k",
-        "--set-key",
-        dest="set_key",
-        nargs="?",
-        const="__PROMPT__",  # Sentinel value to signal interactive prompt
-        metavar="API_KEY",
-        help="Set or update OpenAI API key (prompt if value omitted)",
-    )
-    parser.add_argument("-p", "--ping", action="store_true", help="Test OpenAI API connectivity")
-    parser.add_argument("-l", "--log", action="store_true", help="Display conversation log")
-    parser.add_argument("-c", "--clear-log", action="store_true", help="Clear the conversation log")
-    parser.add_argument("-v", "--version", action="store_true", help="Display current version")
-
-    parser.add_argument("input_data", nargs="*", help="Send one-shot prompt input")
-
+    flag_registry.apply_to_parser(parser)
     return parser.parse_args()
 
 
-def handle_early_exits(args: argparse.Namespace) -> bool:
-    handlers = {
-        "reset": lambda: chat_manager.memory.reset(),
-        "env": command_env,
-        "update": command_update,
-        "uninstall": command_uninstall,
-        "set_key": lambda: command_set_key(None if args.set_key == "__PROMPT__" else args.set_key),
-        "ping": lambda: command_ping(config.api_key),
-        "log": lambda: log_manager.show(),
-        "clear_log": lambda: log_manager.clear(),
-        "version": command_version,
-    }
-    for name, handler in handlers.items():
-        if getattr(args, name):
-            handler()
-            return True
-    return False
+def run_oneshot(input_data: str, args: argparse.Namespace, context: Context) -> None:
+    """
+    Handle a one-shot command with input text and print the result.
+
+    Args:
+        input_data (str): Text prompt to send to the assistant.
+        args (argparse.Namespace): Parsed CLI arguments.
+        context (Context): Runtime context containing configuration and managers.
+    """
+    try:
+        chat_manager = context.chat_manager
+        response, token_usage, timestamp = chat_manager.get_answer(input_data, return_usage=True)
+
+        if not context.config.stream_enabled:
+            if context.config.markdown_enabled:
+                from rich.markdown import Markdown
+
+                console.print(Markdown(response))
+            else:
+                console.print(response)
+
+        context.log_manager.write(input_data, response, token_usage)
+    except Exception as e:
+        context.log_manager.log_error(f"Error in one-shot command: {e}")
+        console.print(f"[bold red]Error:[/bold red] {e}")
+        sys.exit(1)
 
 
-def run_oneshot(input_data: str, args: argparse.Namespace):
-    if args.stream:
-        response = chat_manager.get_answer(input_data)
-    else:
-        response, _ = chat_manager.get_answer(input_data, return_usage=True)
-        if args.markdown:
-            console.print(Markdown(response))
-        else:
-            console.print(response)
-    log_manager.write(input_data, response)
+def main() -> None:
+    """
+    Launch the BlackCortex GPT CLI.
 
-
-def main():
+    Loads flags, parses arguments, configures services, and executes either a one-shot command
+    or launches the REPL interface.
+    """
+    load_all_flags()
     args = parse_args()
 
-    if handle_early_exits(args):
-        return
+    config = Config()
+    log_manager = LogManager(config.log_file, config.log_level)
+    context = Context(config, log_manager)
+
+    for handler, exit_after in flag_registry.get_pre_handlers(args):
+        handler(args, context)
+        if exit_after:
+            return
 
     if not config.api_key:
-        sys.stderr.write("❌ Missing OPENAI_API_KEY. Set it in your environment or .env file.\n")
+        log_manager.log_error("Missing OPENAI_API_KEY")
+        console.print(
+            "[x] Missing OPENAI_API_KEY. Set it in your environment or .env file.", style="red"
+        )
         sys.exit(1)
 
-    global chat_manager
     try:
-        chat_manager = ChatManager(config=config, stream=args.stream)
-    except OpenAIError as e:
-        sys.stderr.write(f"❌ Failed to initialize OpenAI client: {e}\n")
+        chat_manager = ChatManager(config)
+        context.chat_manager = chat_manager
+    except Exception as e:
+        log_manager.log_error(f"Failed to initialize OpenAI client: {e}")
+        console.print(f"[x] Failed to initialize OpenAI client: {e}", style="red")
         sys.exit(1)
+
+    for handler in flag_registry.get_post_handlers(args):
+        handler(args, context)
+        return
 
     input_data = sys.stdin.read().strip() if not sys.stdin.isatty() else " ".join(args.input_data)
+
     if input_data:
-        run_oneshot(input_data, args)
+        run_oneshot(input_data, args, context)
     else:
-        ReplRunner(chat=chat_manager, log=log_manager, markdown=args.markdown).run()
+        ReplRunner(context).run()
 
 
 if __name__ == "__main__":

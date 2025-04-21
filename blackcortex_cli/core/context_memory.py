@@ -1,34 +1,33 @@
+# blackcortex_cli/core/context_memory.py
+
 """
 Contextual memory management for GPT-CLI (short-term memory).
 
-This module defines `ContextMemory`, a class for managing session-local memory.
-It tracks recent conversation turns and maintains a rolling summary, optimizing
-prompt construction while staying within token limits.
+Handles loading, saving, clearing, and summarizing recent user-assistant message pairs,
+with optional summarization to preserve context within memory limits.
 """
 
 import json
 import os
 
 from openai import OpenAI, OpenAIError
-from rich.console import Console
 
-console = Console()
+from blackcortex_cli.utils.console import console
 
 
 class ContextMemory:
-    """
-    Manages short-term conversational memory for a CLI session.
-    Stores and summarizes recent messages using OpenAI and local disk.
-    """
-
     def __init__(self, path: str):
+        """Initialize the memory with the given file path."""
         self.path = path
         self.rolling_summary: str = ""
         self.recent_messages: list[dict] = []
 
     def load(self) -> tuple[str, list[dict]]:
         """
-        Load memory from disk. Initializes rolling summary and message list.
+        Load memory from the file if it exists.
+
+        Returns:
+            A tuple containing the rolling summary and list of recent messages.
         """
         if os.path.exists(self.path):
             try:
@@ -37,7 +36,7 @@ class ContextMemory:
                     self.rolling_summary = data.get("summary", "")
                     self.recent_messages = data.get("recent", [])
             except json.JSONDecodeError:
-                console.print("[bold red]⚠️ Corrupted memory file. Resetting...[/bold red]")
+                console.print("[bold red][-] Corrupted memory file. Resetting...[/bold red]")
                 self.rolling_summary, self.recent_messages = "", []
         return self.rolling_summary, self.recent_messages
 
@@ -49,23 +48,26 @@ class ContextMemory:
             json.dump(
                 {"summary": self.rolling_summary, "recent": self.recent_messages}, f, indent=2
             )
-        os.chmod(self.path, 0o600)
+        os.chmod(self.path, 0o660)
 
-    def reset(self) -> tuple[str, list[dict]]:
+    def clear(self) -> tuple[str, list[dict]]:
         """
-        Delete memory file and clear memory in-memory.
+        Clear the memory file and in-memory contents.
+
+        Returns:
+            A tuple with empty summary and message list.
         """
         if os.path.exists(self.path):
             try:
                 os.remove(self.path)
-                console.print("[bold yellow]🧹 Memory file has been reset.[/bold yellow]\n")
+                console.print("[bold green][+] Memory file has been reset.[/bold green]")
             except PermissionError:
                 console.print(
-                    "[bold red]⚠️ Permission denied when resetting memory file.[/bold red]"
+                    "[bold red][x] Permission denied when resetting memory file.[/bold red]"
                 )
                 return self.rolling_summary, self.recent_messages
         else:
-            console.print("[blue]ℹ️ No memory file to reset.[/blue]\n")
+            console.print("[yellow][-] No memory file to reset.[/yellow]")
 
         self.rolling_summary, self.recent_messages = "", []
         return self.rolling_summary, self.recent_messages
@@ -73,20 +75,23 @@ class ContextMemory:
     def summarize(
         self,
         client: OpenAI,
-        model: str,
-        memory_limit: int,
-        max_summary_tokens: int,
+        config,
     ) -> tuple[str, list[dict]]:
         """
-        Summarize recent messages into a rolling summary using OpenAI.
+        Summarize the recent messages and update the rolling summary.
 
-        Resets the recent_messages buffer after successful summarization.
+        Args:
+            client: OpenAI client used to generate the summary.
+            config: Configuration object containing model, limits, and token settings.
+
+        Returns:
+            A tuple of updated summary and an empty message list.
         """
         if not self.recent_messages:
             self.save()
             return self.rolling_summary, []
 
-        batch = self.recent_messages[-(memory_limit * 2) :]
+        batch = self.recent_messages[-(config.memory_limit * 2) :]
         summary_prompt = (
             f"Here is the current summary of our conversation:\n{self.rolling_summary}\n\n"
             f"Please update it with the following messages:\n"
@@ -95,7 +100,7 @@ class ContextMemory:
 
         try:
             response = client.chat.completions.create(
-                model=model,
+                model=config.summary_model,
                 messages=[
                     {
                         "role": "system",
@@ -104,12 +109,19 @@ class ContextMemory:
                     {"role": "user", "content": summary_prompt},
                 ],
                 temperature=0,
-                max_tokens=max_summary_tokens,
+                max_tokens=config.max_summary_tokens,
             )
             self.rolling_summary = response.choices[0].message.content.strip()
             self.recent_messages = []
             self.save()
         except (OpenAIError, Exception) as e:
-            console.print(f"[bold red]Summary failed:[/bold red] {e}")
+            console.print(f"[bold red][x] Summary failed:[/bold red] {e}")
 
         return self.rolling_summary, self.recent_messages
+
+    def check_memory_limit(self, client: OpenAI, config):
+        """
+        Trigger summarization if recent message count exceeds the configured memory limit.
+        """
+        if len(self.recent_messages) >= config.memory_limit * 2:
+            self.summarize(client=client, config=config)

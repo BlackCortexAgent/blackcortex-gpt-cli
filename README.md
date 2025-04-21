@@ -1,3 +1,4 @@
+
 # BLACKCORTEX GPT CLI
 
 [![Check (Lint + Test)](https://github.com/BlackCortexAgent/blackcortex-gpt-cli/actions/workflows/check.yml/badge.svg)](https://github.com/BlackCortexAgent/blackcortex-gpt-cli/actions/workflows/check.yml)
@@ -59,14 +60,17 @@ touch ~/.gpt-cli/.env
 
 ```env
 OPENAI_API_KEY=your-api-key-here
-OPENAI_MODEL=gpt-4o
-OPENAI_DEFAULT_PROMPT=You are a helpful CLI assistant.
-OPENAI_LOGFILE=~/.gpt.log
-OPENAI_TEMPERATURE=0.5
-OPENAI_MAX_TOKENS=4096
-OPENAI_MAX_SUMMARY_TOKENS=2048
-OPENAI_MEMORY_PATH=~/.gpt_memory.json
-OPENAI_STREAM_ENABLED=false
+MODEL=gpt-4o
+SUMMARY_MODEL=gpt-3.5-turbo
+DEFAULT_PROMPT=You are a helpful CLI assistant.
+TEMPERATURE=0.5
+MAX_TOKENS=4096
+MEMORY_LIMIT=10
+MAX_SUMMARY_TOKENS=2048
+LOG_LEVEL=INFO
+LOG_TO_CONSOLE=false
+MARKDOWN_ENABLED=false
+STREAM_ENABLED=false
 ```
 
 ### 🧾 CLI Usage
@@ -77,24 +81,38 @@ After installation, use the `gpt` command globally.
 
 | Argument     | Description                |
 | ------------ | -------------------------- |
-| `input_data` | Send one-shot prompt input |
+| `input_data` | Input text for one-shot command processing. |
 
 #### **Options**
 
-| Flag                                  | Description                                            |
-| ------------------------------------- | ------------------------------------------------------ |
-| `-h`, `--help`                        | Show this help message and exit                        |
-| `-m`, `--no-markdown`                 | Disable Markdown formatting in responses               |
-| `-s`, `--stream`                      | Stream assistant responses token-by-token              |
-| `-r`, `--reset`                       | Reset context memory                                   |
-| `-e`, `--env`                         | Open configuration file                                |
-| `-u`, `--update`                      | Update the CLI tool                                    |
-| `-x`, `--uninstall`                   | Uninstall the CLI tool                                 |
-| `-k [API_KEY]`, `--set-key [API_KEY]` | Set or update OpenAI API key (prompt if value omitted) |
-| `-p`, `--ping`                        | Test OpenAI API connectivity                           |
-| `-l`, `--log`                         | Display conversation log                               |
-| `-c`, `--clear-log`                   | Clear the conversation log                             |
-| `-v`, `--version`                     | Display current version                                |
+- `-h, --help`: Show this help message and exit
+
+##### **Session**
+
+- `-ch, --clear-history`: Clear prompt history
+- `-cl, --clear-log`: Clear the conversation log
+- `-cm, --clear-memory`: Clear context memory
+- `-l, --log`: Display conversation log
+
+##### **Configuration**
+
+- `-e, --env`: Open configuration file
+- `-k [API_KEY], --set-key [API_KEY]`: Set or update OpenAI API key (prompt if value omitted)
+
+##### **Output**
+
+- `-md {true,false}, --markdown {true,false}`: Control Markdown formatting in responses ('true' to enable, 'false' to disable)
+- `-s {true,false}, --stream {true,false}`: Control streaming of assistant responses ('true' to enable, 'false' to disable)
+
+##### **System**
+
+- `-p, --ping`: Test OpenAI API connectivity
+- `-x, --uninstall`: Uninstall the CLI tool
+- `-u, --update`: Update the CLI tool
+
+##### **General**
+
+- `-v, --version`: Show version and exit
 
 ## Environment Configuration
 
@@ -108,16 +126,18 @@ You can configure model behavior, memory, logging, and streaming options.
 ### Sample `.env` File
 
 ```env
-OPENAI_API_KEY=your-api-key-here             # Required
-OPENAI_MODEL=gpt-4o                          # Model ID (default: gpt-4o)
-OPENAI_DEFAULT_PROMPT=You are a helpful assistant.
-OPENAI_LOGFILE=~/.gpt.log                    # Log file location
-OPENAI_TEMPERATURE=0.5                       # Response randomness (default: 0.5)
-OPENAI_MAX_TOKENS=4096                       # Max response tokens
-OPENAI_MAX_SUMMARY_TOKENS=2048              # Max tokens for memory summarization
-OPENAI_MEMORY_PATH=~/.gpt_memory.json        # Path to memory file
-OPENAI_MEMORY_LIMIT=10                       # Number of recent messages stored (default: 10)
-OPENAI_STREAM_ENABLED=false                  # Enable token-by-token streaming (true/false)
+OPENAI_API_KEY=your-api-key-here             # Required OpenAI API key
+MODEL=gpt-4o                                 # Model ID for responses (default: gpt-4o)
+SUMMARY_MODEL=gpt-3.5-turbo                  # Model ID for summarization (default: gpt-3.5-turbo)
+DEFAULT_PROMPT=You are a helpful assistant.   # Default system prompt (default: empty)
+TEMPERATURE=0.5                              # Response randomness (default: 0.5)
+MAX_TOKENS=4096                              # Max response tokens (default: 4096)
+MEMORY_LIMIT=10                              # Number of recent messages stored (default: 10)
+MAX_SUMMARY_TOKENS=2048                     # Max tokens for memory summarization (default: 2048)
+LOG_LEVEL=INFO                               # Logging level (default: INFO)
+LOG_TO_CONSOLE=false                         # Enable console logging (default: false)
+MARKDOWN_ENABLED=false                       # Enable Markdown formatting (default: false)
+STREAM_ENABLED=false                         # Enable token-by-token streaming (default: false)
 ```
 
 > Use `gpt --env` to open and edit the `.env` file in your terminal editor.
@@ -129,7 +149,7 @@ Memory includes:
 - Rolling conversation summary
 - The 10 most recent messages
 
-Older messages are summarized once the limit is reached. Use `--reset` to clear memory.
+Older messages are summarized once the limit is reached. Use `--clear-memory` to clear memory.
 
 ## Troubleshooting
 
@@ -142,7 +162,7 @@ Older messages are summarized once the limit is reached. Use `--reset` to clear 
 ```bash
 You: Tell me a joke about databases
 
-GPT: Why did the database break up with the spreadsheet?
+Assistant: Why did the database break up with the spreadsheet?
 
 Because it couldn't handle the rows of emotions.
 ────────────────────────────────────────────────────────
