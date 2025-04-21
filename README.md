@@ -1,4 +1,3 @@
-
 # BLACKCORTEX GPT CLI
 
 [![Check (Lint + Test)](https://github.com/BlackCortexAgent/blackcortex-gpt-cli/actions/workflows/check.yml/badge.svg)](https://github.com/BlackCortexAgent/blackcortex-gpt-cli/actions/workflows/check.yml)
@@ -48,39 +47,14 @@ cd blackcortex-gpt-cli
 make install
 ```
 
-## Environment Setup
-
-Create a `.env` file to configure your API and options:
-
-```bash
-touch ~/.gpt-cli/.env
-```
-
-### Sample `.env`
-
-```env
-OPENAI_API_KEY=your-api-key-here
-MODEL=gpt-4o
-SUMMARY_MODEL=gpt-3.5-turbo
-DEFAULT_PROMPT=You are a helpful CLI assistant.
-TEMPERATURE=0.5
-MAX_TOKENS=4096
-MEMORY_LIMIT=10
-MAX_SUMMARY_TOKENS=2048
-LOG_LEVEL=INFO
-LOG_TO_CONSOLE=false
-MARKDOWN_ENABLED=false
-STREAM_ENABLED=false
-```
-
-### 🧾 CLI Usage
+### CLI Usage
 
 After installation, use the `gpt` command globally.
 
 #### **Positional Arguments**
 
-| Argument     | Description                |
-| ------------ | -------------------------- |
+| Argument     | Description                                 |
+| ------------ | ------------------------------------------- |
 | `input_data` | Input text for one-shot command processing. |
 
 #### **Options**
@@ -126,18 +100,24 @@ You can configure model behavior, memory, logging, and streaming options.
 ### Sample `.env` File
 
 ```env
-OPENAI_API_KEY=your-api-key-here             # Required OpenAI API key
-MODEL=gpt-4o                                 # Model ID for responses (default: gpt-4o)
-SUMMARY_MODEL=gpt-3.5-turbo                  # Model ID for summarization (default: gpt-3.5-turbo)
-DEFAULT_PROMPT=You are a helpful assistant.   # Default system prompt (default: empty)
-TEMPERATURE=0.5                              # Response randomness (default: 0.5)
-MAX_TOKENS=4096                              # Max response tokens (default: 4096)
-MEMORY_LIMIT=10                              # Number of recent messages stored (default: 10)
-MAX_SUMMARY_TOKENS=2048                     # Max tokens for memory summarization (default: 2048)
-LOG_LEVEL=INFO                               # Logging level (default: INFO)
-LOG_TO_CONSOLE=false                         # Enable console logging (default: false)
-MARKDOWN_ENABLED=false                       # Enable Markdown formatting (default: false)
-STREAM_ENABLED=false                         # Enable token-by-token streaming (default: false)
+OPENAI_API_KEY=your-api-key-here
+MODEL=gpt-4o
+SUMMARY_MODEL=gpt-3.5-turbo
+DEFAULT_PROMPT="You are a helpful assistant."
+TEMPERATURE=0.7
+MAX_TOKENS=4096
+
+MEMORY_PATH=/custom/path/memory.json
+HISTORY_PATH=/custom/path/history
+MEMORY_LIMIT=10
+MAX_SUMMARY_TOKENS=2048
+
+LOG_FILE=/custom/path/gpt.log
+LOG_LEVEL=INFO
+LOG_TO_CONSOLE=true
+
+MARKDOWN_ENABLED=true
+STREAM_ENABLED=false
 ```
 
 > Use `gpt --env` to open and edit the `.env` file in your terminal editor.
@@ -172,7 +152,7 @@ Because it couldn't handle the rows of emotions.
 
 We welcome all contributions!
 
-### 🚀 Quickstart for Development
+### Quickstart for Development
 
 ```bash
 git clone https://github.com/BlackCortexAgent/blackcortex-gpt-cli.git
@@ -197,7 +177,7 @@ make format
 Use `make check` to lint, test, build, and validate in `.venv`.  
 Use `make ci-release` for system Python (e.g., CI/CD pipelines).
 
-### 📄 See [CONTRIBUTING.md](CONTRIBUTING.md) for full details.
+### See [CONTRIBUTING.md](CONTRIBUTING.md) for full details.
 
 ## License
 

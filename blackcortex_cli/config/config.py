@@ -19,7 +19,6 @@ def load_env() -> bool:
     Returns:
         bool: True if the dotenv module is available and loading succeeded, False otherwise.
     """
-
     try:
         from dotenv import load_dotenv
 
@@ -56,14 +55,14 @@ class Config:
         self.max_tokens = int(os.getenv("MAX_TOKENS", "4096"))
 
         cli_path = get_cli_path()
-        self.memory_path = os.path.join(cli_path, "memory.json")
-        self.history_path = os.path.join(cli_path, "history")
+        self.memory_path = os.getenv("MEMORY_PATH", os.path.join(cli_path, "memory.json"))
+        self.history_path = os.getenv("HISTORY_PATH", os.path.join(cli_path, "history"))
         self.memory_limit = int(os.getenv("MEMORY_LIMIT", "10"))
         self.max_summary_tokens = int(os.getenv("MAX_SUMMARY_TOKENS", "2048"))
 
-        self.log_file = os.path.join(cli_path, "gpt.log")
+        self.log_file = os.getenv("LOG_FILE", os.path.join(cli_path, "gpt.log"))
         self.log_level = os.getenv("LOG_LEVEL", "INFO")
         self.log_to_console = os.getenv("LOG_TO_CONSOLE", "false").lower() == "true"
 
-        self.markdown_enabled = os.getenv("MARKDOWN_ENABLED", "false").lower() == "true"
+        self.markdown_enabled = os.getenv("MARKDOWN_ENABLED", "true").lower() == "true"
         self.stream_enabled = os.getenv("STREAM_ENABLED", "false").lower() == "true"
