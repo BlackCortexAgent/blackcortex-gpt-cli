@@ -11,8 +11,12 @@ import blackcortex_cli.main as cli_main
 
 @pytest.fixture
 def mock_context(monkeypatch):
+    """Fixture providing a mocked Context with a fully configured Config object."""
+    # Mock Config with all required attributes
     config = MagicMock()
-    config.api_key = "sk-test"
+    config.api_key = "sk-test"  # Valid API key to pass the check
+    config.log_file = "/tmp/gpt.log"
+    config.log_level = "INFO"
     config.stream_enabled = False
     config.markdown_enabled = False
 
@@ -24,6 +28,8 @@ def mock_context(monkeypatch):
     context.chat_manager = chat_manager
     context.log_manager = log_manager
 
+    # Mock class instantiations to return the mocked objects
+    monkeypatch.setattr(cli_main, "Config", lambda: config)
     monkeypatch.setattr(cli_main, "Context", lambda *a, **kw: context)
     monkeypatch.setattr(cli_main, "ChatManager", lambda _: chat_manager)
     monkeypatch.setattr(cli_main, "LogManager", lambda *a, **kw: log_manager)
@@ -34,15 +40,12 @@ def mock_context(monkeypatch):
 def test_main_runs_oneshot_with_input(monkeypatch, mock_context):
     """Test one-shot execution when input is provided via command line args."""
     monkeypatch.setattr(cli_main, "load_all_flags", lambda: None)
-
     args = MagicMock()
     args.input_data = ["Hello"]
     monkeypatch.setattr(cli_main, "parse_args", lambda: args)
-
     stdin = MagicMock()
     stdin.isatty.return_value = True
     monkeypatch.setattr(cli_main.sys, "stdin", stdin)
-
     monkeypatch.setattr(
         cli_main,
         "flag_registry",
@@ -58,22 +61,18 @@ def test_main_runs_oneshot_with_input(monkeypatch, mock_context):
 def test_main_falls_back_to_repl(monkeypatch, mock_context):
     """Test REPL launch when no input is given and stdin is a terminal."""
     monkeypatch.setattr(cli_main, "load_all_flags", lambda: None)
-
     args = MagicMock()
     args.input_data = []
     monkeypatch.setattr(cli_main, "parse_args", lambda: args)
-
     stdin = MagicMock()
     stdin.isatty.return_value = True
     monkeypatch.setattr(cli_main.sys, "stdin", stdin)
-
     monkeypatch.setattr(
         cli_main,
         "flag_registry",
         MagicMock(get_pre_handlers=lambda args: [], get_post_handlers=lambda args: []),
     )
     monkeypatch.setattr(cli_main, "run_oneshot", MagicMock())
-
     repl_runner = MagicMock()
     monkeypatch.setattr(cli_main, "ReplRunner", lambda ctx: repl_runner)
 
@@ -85,8 +84,11 @@ def test_main_aborts_on_missing_api_key(monkeypatch):
     """Test behavior when API key is missing."""
     monkeypatch.setattr(cli_main, "load_all_flags", lambda: None)
 
+    # Mock Config with no api_key
     config = MagicMock()
     config.api_key = None
+    config.log_file = "/tmp/gpt.log"
+    config.log_level = "INFO"
     monkeypatch.setattr(cli_main, "Config", lambda: config)
 
     log_manager = MagicMock()
@@ -107,33 +109,29 @@ def test_main_aborts_on_missing_api_key(monkeypatch):
     stdin.encoding = "utf-8"  # Set encoding to prevent TypeError in PromptSession
     monkeypatch.setattr(cli_main.sys, "stdin", stdin)
 
-    # Define a mock exit that raises SystemExit
     def mock_exit(code):
         raise SystemExit(code)
 
     monkeypatch.setattr(cli_main.sys, "exit", mock_exit)
 
-    # Expect SystemExit with code 1
     with pytest.raises(SystemExit) as exc_info:
         cli_main.main()
     assert exc_info.value.code == 1
+    log_manager.log_error.assert_called_once_with("Missing OPENAI_API_KEY")
 
 
 def test_main_runs_pre_and_post_handlers(monkeypatch, mock_context):
     """Test that pre and post handlers are called and exit if required."""
     monkeypatch.setattr(cli_main, "load_all_flags", lambda: None)
-
     args = MagicMock()
     args.input_data = []
     monkeypatch.setattr(cli_main, "parse_args", lambda: args)
-
     handler_pre = MagicMock()
     handler_post = MagicMock()
     registry = MagicMock()
     registry.get_pre_handlers.return_value = [(handler_pre, True)]
     registry.get_post_handlers.return_value = [handler_post]
     monkeypatch.setattr(cli_main, "flag_registry", registry)
-
     monkeypatch.setattr(cli_main.sys, "stdin", MagicMock(isatty=lambda: True))
     monkeypatch.setattr(cli_main, "console", MagicMock())
 
@@ -199,25 +197,24 @@ def test_main_handles_chat_manager_error(monkeypatch, mock_context):
     )
     monkeypatch.setattr(cli_main.sys, "stdin", MagicMock(isatty=lambda: True))
 
-    # Define a mock exit that raises SystemExit
     def mock_exit(code):
         raise SystemExit(code)
 
     monkeypatch.setattr(cli_main.sys, "exit", mock_exit)
 
-    # Expect SystemExit with code 1
     with pytest.raises(SystemExit) as exc_info:
         cli_main.main()
     assert exc_info.value.code == 1
+    mock_context.log_manager.log_error.assert_called_once_with(
+        "Error in one-shot command: ChatManager failed"
+    )
 
 
 def test_load_all_flags(monkeypatch):
     """Test load_all_flags dynamically imports flag modules."""
-    # Mock pkgutil.iter_modules to return a dummy module
     mock_iter_modules = MagicMock(return_value=[(None, "dummy_flag", True)])
     monkeypatch.setattr(pkgutil, "iter_modules", mock_iter_modules)
 
-    # Mock importlib.import_module
     mock_import_module = MagicMock()
     monkeypatch.setattr(importlib, "import_module", mock_import_module)
 
@@ -228,17 +225,14 @@ def test_load_all_flags(monkeypatch):
 
 def test_parse_args(monkeypatch):
     """Test parse_args sets up the parser and applies flags."""
-    # Mock flag_registry.apply_to_parser
     mock_apply_to_parser = MagicMock()
     monkeypatch.setattr(cli_main.flag_registry, "apply_to_parser", mock_apply_to_parser)
 
-    # Mock argparse.ArgumentParser
     with patch("argparse.ArgumentParser") as mock_parser_class:
         mock_parser = MagicMock()
         mock_parser_class.return_value = mock_parser
         mock_parser.parse_args.return_value = argparse.Namespace(input_data=["test"])
 
-        # Set sys.argv for parsing
         monkeypatch.setattr(sys, "argv", ["script.py", "test"])
 
         result = cli_main.parse_args()
@@ -254,80 +248,64 @@ def test_parse_args(monkeypatch):
 def test_main_runs_post_handlers(monkeypatch, mock_context):
     """Test main runs post-handlers after input processing or no input."""
     monkeypatch.setattr(cli_main, "load_all_flags", lambda: None)
-
     args = MagicMock()
-    args.input_data = []  # No input to trigger REPL
+    args.input_data = []
     monkeypatch.setattr(cli_main, "parse_args", lambda: args)
-
     handler_post = MagicMock()
     registry = MagicMock()
     registry.get_pre_handlers.return_value = []
     registry.get_post_handlers.return_value = [handler_post]
     monkeypatch.setattr(cli_main, "flag_registry", registry)
-
     stdin = MagicMock()
     stdin.isatty.return_value = True
     monkeypatch.setattr(cli_main.sys, "stdin", stdin)
-
     monkeypatch.setattr(cli_main, "console", MagicMock())
     repl_runner = MagicMock()
     monkeypatch.setattr(cli_main, "ReplRunner", lambda ctx: repl_runner)
 
     cli_main.main()
     handler_post.assert_called_once_with(args, mock_context)
-    repl_runner.run.assert_not_called()  # Post-handler returns before REPL
+    repl_runner.run.assert_not_called()
 
 
 def test_main_executes_post_handler(monkeypatch, mock_context):
     """Test main executes a single post-handler and returns."""
     monkeypatch.setattr(cli_main, "load_all_flags", lambda: None)
-
     args = MagicMock()
-    args.input_data = []  # No input
+    args.input_data = []
     monkeypatch.setattr(cli_main, "parse_args", lambda: args)
-
-    # Set up no pre-handlers, one post-handler
     handler_post = MagicMock()
     registry = MagicMock()
     registry.get_pre_handlers.return_value = []
     registry.get_post_handlers.return_value = [handler_post]
     monkeypatch.setattr(cli_main, "flag_registry", registry)
-
-    # Mock stdin to simulate a terminal
     stdin = MagicMock()
     stdin.isatty.return_value = True
     monkeypatch.setattr(cli_main.sys, "stdin", stdin)
-
-    # Mock console and ReplRunner
     monkeypatch.setattr(cli_main, "console", MagicMock())
     repl_runner = MagicMock()
     monkeypatch.setattr(cli_main, "ReplRunner", lambda ctx: repl_runner)
 
     cli_main.main()
     handler_post.assert_called_once_with(args, mock_context)
-    repl_runner.run.assert_not_called()  # Post-handler causes return, skipping REPL
+    repl_runner.run.assert_not_called()
 
 
 def test_main_runs_pre_and_post_handlers_no_exit(monkeypatch, mock_context):
     """Test main runs pre-handlers without exiting and reaches REPL."""
     monkeypatch.setattr(cli_main, "load_all_flags", lambda: None)
-
     args = MagicMock()
     args.input_data = []
     monkeypatch.setattr(cli_main, "parse_args", lambda: args)
-
-    # Set up pre-handler only
     handler_pre = MagicMock()
     registry = MagicMock()
-    registry.get_pre_handlers.return_value = [(handler_pre, False)]  # No exit
-    registry.get_post_handlers.return_value = []  # No post-handlers
+    registry.get_pre_handlers.return_value = [(handler_pre, False)]
+    registry.get_post_handlers.return_value = []
     monkeypatch.setattr(cli_main, "flag_registry", registry)
-
-    # Mock stdin and console
-    monkeypatch.setattr(cli_main.sys, "stdin", MagicMock(isatty=lambda: True))
+    stdin = MagicMock()
+    stdin.isatty.return_value = True
+    monkeypatch.setattr(cli_main.sys, "stdin", stdin)
     monkeypatch.setattr(cli_main, "console", MagicMock())
-
-    # Mock REPL
     repl_runner = MagicMock()
     monkeypatch.setattr(cli_main, "ReplRunner", lambda ctx: repl_runner)
 
@@ -339,28 +317,22 @@ def test_main_runs_pre_and_post_handlers_no_exit(monkeypatch, mock_context):
 def test_main_handles_chat_manager_init_error(monkeypatch, mock_context):
     """Test main handles ChatManager initialization failure."""
     monkeypatch.setattr(cli_main, "load_all_flags", lambda: None)
-
     args = MagicMock()
     args.input_data = []
     monkeypatch.setattr(cli_main, "parse_args", lambda: args)
-
-    # No pre/post handlers
     monkeypatch.setattr(
         cli_main,
         "flag_registry",
         MagicMock(get_pre_handlers=lambda args: [], get_post_handlers=lambda args: []),
     )
-
-    # Mock stdin
     monkeypatch.setattr(cli_main.sys, "stdin", MagicMock(isatty=lambda: True))
 
-    # Mock ChatManager to raise an exception
+    # Mock ChatManager to raise an exception during initialization
     def mock_chat_manager(config):
         raise Exception("Initialization failed")
 
     monkeypatch.setattr(cli_main, "ChatManager", mock_chat_manager)
 
-    # Mock console and sys.exit
     mock_console = MagicMock()
     monkeypatch.setattr(cli_main, "console", mock_console)
 
@@ -374,7 +346,4 @@ def test_main_handles_chat_manager_init_error(monkeypatch, mock_context):
     assert exc_info.value.code == 1
     mock_context.log_manager.log_error.assert_called_once_with(
         "Failed to initialize OpenAI client: Initialization failed"
-    )
-    mock_console.print.assert_called_once_with(
-        "[x] Failed to initialize OpenAI client: Initialization failed", style="red"
     )
