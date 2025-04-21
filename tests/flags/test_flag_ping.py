@@ -10,10 +10,23 @@ from blackcortex_cli.core.log_manager import LogManager
 from blackcortex_cli.flags.flag_ping import handle_ping
 
 
+# Fixture to prevent .gpt-cli directory creation
+@pytest.fixture(autouse=True)
+def prevent_gpt_cli_dir(monkeypatch):
+    """Mock file system operations to prevent .gpt-cli directory creation."""
+    monkeypatch.setattr("os.makedirs", Mock())
+    monkeypatch.setattr("os.chmod", Mock(side_effect=OSError("Mocked chmod")))
+    # Mock load_env to prevent .env loading and directory creation
+    monkeypatch.setattr("blackcortex_cli.config.config.load_env", lambda: False)
+    yield
+
+
+# Fixture for a test context with a mocked Config and LogManager
 @pytest.fixture
-def context(tmp_path):
-    """Create a test context with a mocked LogManager and API key."""
-    config = Config()
+def context(tmp_path, monkeypatch):
+    """Create a test context with a mocked Config and LogManager."""
+    # Mock Config to avoid real initialization
+    config = Mock(spec=Config)
     config.log_file = str(tmp_path / "gpt.log")
     config.api_key = "test_api_key"
     log_manager = LogManager(config.log_file)
