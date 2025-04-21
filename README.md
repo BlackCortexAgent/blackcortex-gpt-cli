@@ -44,7 +44,7 @@ pipx install git+https://github.com/BlackCortexAgent/blackcortex-gpt-cli.git
 ```bash
 git clone https://github.com/BlackCortexAgent/blackcortex-gpt-cli.git
 cd blackcortex-gpt-cli
-make install
+make dev
 ```
 
 ### CLI Usage
