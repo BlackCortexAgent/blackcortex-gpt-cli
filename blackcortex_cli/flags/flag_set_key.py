@@ -19,6 +19,7 @@ from blackcortex_cli.utils.console import console
 
 
 def handle_set_key(args: argparse.Namespace, context=None):
+    """
     Set and validate the OpenAI API key, saving it to the .env file with secure permissions.
 
     If the key is not provided via CLI, prompts the user interactively.
