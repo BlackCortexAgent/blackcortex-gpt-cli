@@ -23,7 +23,7 @@ def test_handle_update_pipx_success(mock_subprocess_run):
         patch("blackcortex_cli.utils.console.console.print") as mock_print,
         patch("sys.exit") as mock_exit,
     ):
-        handle_update(Namespace())
+        handle_update(Namespace(), None)
 
         mock_subprocess_run.assert_called_once_with(
             ["pipx", "upgrade", "blackcortex-gpt-cli"], check=True
@@ -43,7 +43,7 @@ def test_handle_update_pip_success(mock_subprocess_run):
         patch("blackcortex_cli.utils.console.console.print") as mock_print,
         patch("sys.exit") as mock_exit,
     ):
-        handle_update(Namespace())
+        handle_update(Namespace(), None)
 
         mock_subprocess_run.assert_called_once_with(
             ["pip", "install", "--upgrade", "blackcortex-gpt-cli"], check=True
@@ -66,7 +66,7 @@ def test_handle_update_failure(mock_subprocess_run):
         patch("blackcortex_cli.utils.console.console.print") as mock_print,
         patch("sys.exit") as mock_exit,
     ):
-        handle_update(Namespace())
+        handle_update(Namespace(), None)
 
         mock_subprocess_run.assert_called_once_with(
             ["pipx", "upgrade", "blackcortex-gpt-cli"], check=True
@@ -91,7 +91,7 @@ def test_handle_update_empty_package_name(mock_subprocess_run):
         patch("blackcortex_cli.utils.console.console.print") as mock_print,
         patch("sys.exit") as mock_exit,
     ):
-        handle_update(Namespace())
+        handle_update(Namespace(), None)
 
         mock_subprocess_run.assert_called_once_with(["pipx", "upgrade", ""], check=True)
         mock_print.assert_any_call("[bold cyan]Updating ...[/bold cyan]")

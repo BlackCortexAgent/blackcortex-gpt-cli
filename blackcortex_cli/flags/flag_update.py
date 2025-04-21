@@ -14,7 +14,7 @@ from blackcortex_cli.utils.console import console
 from blackcortex_cli.utils.metadata import read_name
 
 
-def handle_update(_: argparse.Namespace):
+def handle_update(_: argparse.Namespace, context=None):
     """
     Update the CLI tool via pip or pipx.
 

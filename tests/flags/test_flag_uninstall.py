@@ -23,7 +23,7 @@ def test_handle_uninstall_pipx_success(mock_subprocess_run):
         patch("blackcortex_cli.utils.console.console.print") as mock_print,
         patch("sys.exit") as mock_exit,
     ):
-        handle_uninstall(Namespace())
+        handle_uninstall(Namespace(), None)
 
         mock_subprocess_run.assert_called_once_with(
             ["pipx", "uninstall", "blackcortex-gpt-cli"], check=True
@@ -43,7 +43,7 @@ def test_handle_uninstall_pip_success(mock_subprocess_run):
         patch("blackcortex_cli.utils.console.console.print") as mock_print,
         patch("sys.exit") as mock_exit,
     ):
-        handle_uninstall(Namespace())
+        handle_uninstall(Namespace(), None)
 
         mock_subprocess_run.assert_called_once_with(
             ["pip", "uninstall", "-y", "blackcortex-gpt-cli"], check=True
@@ -66,7 +66,7 @@ def test_handle_uninstall_failure(mock_subprocess_run):
         patch("blackcortex_cli.utils.console.console.print") as mock_print,
         patch("sys.exit") as mock_exit,
     ):
-        handle_uninstall(Namespace())
+        handle_uninstall(Namespace(), None)
 
         mock_subprocess_run.assert_called_once_with(
             ["pipx", "uninstall", "blackcortex-gpt-cli"], check=True
@@ -89,7 +89,7 @@ def test_handle_uninstall_empty_package_name(mock_subprocess_run):
         patch("blackcortex_cli.utils.console.console.print") as mock_print,
         patch("sys.exit") as mock_exit,
     ):
-        handle_uninstall(Namespace())
+        handle_uninstall(Namespace(), None)
 
         mock_subprocess_run.assert_called_once_with(["pipx", "uninstall", ""], check=True)
         mock_print.assert_any_call("[bold cyan]🗑️ Uninstalling ...[/bold cyan]")
