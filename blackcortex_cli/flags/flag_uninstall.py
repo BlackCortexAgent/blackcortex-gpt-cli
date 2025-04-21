@@ -14,8 +14,7 @@ from blackcortex_cli.utils.console import console
 from blackcortex_cli.utils.metadata import read_name
 
 
-def handle_uninstall(_: argparse.Namespace, context):
-    """
+def handle_uninstall(_: argparse.Namespace, context=None):
     Handler for the --uninstall flag to remove the CLI tool.
 
     Attempts to uninstall the CLI using pipx if available, otherwise falls back to pip.
