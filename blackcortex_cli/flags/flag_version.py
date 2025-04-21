@@ -11,7 +11,7 @@ from blackcortex_cli.utils.console import console
 from blackcortex_cli.utils.metadata import read_version
 
 
-def show_version(_: argparse.Namespace, context) -> None:
+def show_version(_: argparse.Namespace, context):
     """Print the current version of the CLI tool."""
     try:
         console.print(read_version())

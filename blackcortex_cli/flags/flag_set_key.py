@@ -18,7 +18,7 @@ from blackcortex_cli.core.flag_registry import Flag, flag_registry
 from blackcortex_cli.utils.console import console
 
 
-def handle_set_key(args: argparse.Namespace):
+def handle_set_key(args: argparse.Namespace, context):
     """
     Set and validate the OpenAI API key, saving it to the .env file with secure permissions.
 
