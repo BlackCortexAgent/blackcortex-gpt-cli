@@ -1,4 +1,4 @@
-# blackcortex_cli/flags/flag_reset.py
+# blackcortex_cli/flags/flag_clear_history.py
 
 """
 Defines the --clear-history flag for the GPT CLI to delete the REPL command history file.
