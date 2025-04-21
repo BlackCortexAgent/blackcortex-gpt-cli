@@ -29,7 +29,7 @@ def test_handle_set_key_cli_success_existing_file(monkeypatch, env_path):
         patch("os.chmod") as mock_chmod,
         patch("blackcortex_cli.utils.console.console.print") as mock_print,
     ):
-        handle_set_key(Namespace(set_key="new_key"))
+        handle_set_key(Namespace(set_key="new_key"), None)
 
         mock_makedirs.assert_called_once_with(os.path.dirname(env_path), exist_ok=True)
         mock_chmod.assert_called_once_with(env_path, 0o660)
@@ -57,7 +57,7 @@ def test_handle_set_key_cli_success_new_file(monkeypatch, env_path):
         patch("os.chmod") as mock_chmod,
         patch("blackcortex_cli.utils.console.console.print") as mock_print,
     ):
-        handle_set_key(Namespace(set_key="new_key"))
+        handle_set_key(Namespace(set_key="new_key"), None)
 
         mock_makedirs.assert_called_once_with(os.path.dirname(env_path), exist_ok=True)
         mock_chmod.assert_called_once_with(env_path, 0o660)
@@ -84,7 +84,7 @@ def test_handle_set_key_prompt_success(monkeypatch, env_path):
         patch("os.chmod") as mock_chmod,
         patch("blackcortex_cli.utils.console.console.print") as mock_print,
     ):
-        handle_set_key(Namespace(set_key="__PROMPT__"))
+        handle_set_key(Namespace(set_key="__PROMPT__"), None)
 
         mock_makedirs.assert_called_once_with(os.path.dirname(env_path), exist_ok=True)
         mock_chmod.assert_called_once_with(env_path, 0o660)
@@ -106,7 +106,7 @@ def test_handle_set_key_invalid_key(monkeypatch, env_path):
     monkeypatch.setattr("blackcortex_cli.flags.flag_set_key.OpenAI", lambda **kwargs: mock_client)
 
     with patch("blackcortex_cli.utils.console.console.print") as mock_print:
-        handle_set_key(Namespace(set_key="invalid_key"))
+        handle_set_key(Namespace(set_key="invalid_key"), None)
         mock_print.assert_any_call("[bold cyan]Validating API key...[/bold cyan]")
         mock_print.assert_any_call("[bold red][x] Invalid API key[/bold red]")
 
@@ -119,7 +119,7 @@ def test_handle_set_key_prompt_cancelled(monkeypatch, env_path):
     )
 
     with patch("blackcortex_cli.utils.console.console.print") as mock_print:
-        handle_set_key(Namespace(set_key="__PROMPT__"))
+        handle_set_key(Namespace(set_key="__PROMPT__"), None)
         mock_print.assert_any_call(
             "[bold yellow][-] No API key provided. Please enter your OpenAI API key:[/bold yellow]"
         )
@@ -137,7 +137,7 @@ def test_handle_set_key_makedirs_oserror(monkeypatch, env_path):
         patch("os.makedirs", side_effect=OSError("Permission denied")),
         patch("blackcortex_cli.utils.console.console.print") as mock_print,
     ):
-        handle_set_key(Namespace(set_key="new_key"))
+        handle_set_key(Namespace(set_key="new_key"), None)
         mock_print.assert_any_call("[bold cyan]Validating API key...[/bold cyan]")
         mock_print.assert_any_call(
             "[bold red][x] Failed to write .env file:[/bold red] Permission denied"
@@ -157,7 +157,7 @@ def test_handle_set_key_write_oserror(monkeypatch, env_path):
         patch("builtins.open", side_effect=OSError("Write error")),
         patch("blackcortex_cli.utils.console.console.print") as mock_print,
     ):
-        handle_set_key(Namespace(set_key="new_key"))
+        handle_set_key(Namespace(set_key="new_key"), None)
         mock_print.assert_any_call("[bold cyan]Validating API key...[/bold cyan]")
         mock_print.assert_any_call(
             "[bold red][x] Failed to write .env file:[/bold red] Write error"
@@ -179,7 +179,7 @@ def test_handle_set_key_chmod_oserror(monkeypatch, env_path):
         patch("os.chmod", side_effect=OSError("Permission denied")),
         patch("blackcortex_cli.utils.console.console.print") as mock_print,
     ):
-        handle_set_key(Namespace(set_key="new_key"))
+        handle_set_key(Namespace(set_key="new_key"), None)
         mock_print.assert_any_call("[bold cyan]Validating API key...[/bold cyan]")
         mock_print.assert_any_call(
             "[bold red][x] Failed to write .env file:[/bold red] Permission denied"
