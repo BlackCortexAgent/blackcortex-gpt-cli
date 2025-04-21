@@ -83,8 +83,11 @@ def test_config_with_env_vars(mock_os, mock_paths):
         "DEFAULT_PROMPT": "Test prompt",
         "TEMPERATURE": "0.7",
         "MAX_TOKENS": "8192",
+        "MEMORY_PATH": "/custom/path/memory.json",
+        "HISTORY_PATH": "/custom/path/history",
         "MEMORY_LIMIT": "20",
         "MAX_SUMMARY_TOKENS": "4096",
+        "LOG_FILE": "/custom/path/gpt.log",
         "LOG_LEVEL": "DEBUG",
         "LOG_TO_CONSOLE": "true",
         "MARKDOWN_ENABLED": "true",
@@ -105,13 +108,13 @@ def test_config_with_env_vars(mock_os, mock_paths):
         assert config.max_tokens == 8192
 
         # Memory and History
-        assert config.memory_path == os.path.join(mock_paths["CLI_PATH"], "memory.json")
-        assert config.history_path == os.path.join(mock_paths["CLI_PATH"], "history")
+        assert config.memory_path == "/custom/path/memory.json"
+        assert config.history_path == "/custom/path/history"
         assert config.memory_limit == 20
         assert config.max_summary_tokens == 4096
 
         # Logging
-        assert config.log_file == os.path.join(mock_paths["CLI_PATH"], "gpt.log")
+        assert config.log_file == "/custom/path/gpt.log"
         assert config.log_level == "DEBUG"
         assert config.log_to_console is True
 
@@ -139,18 +142,18 @@ def test_config_with_defaults(mock_os, mock_paths):
         assert config.max_tokens == 4096
 
         # Memory and History
-        assert config.memory_path == os.path.join(mock_paths["CLI_PATH"], "memory.json")
-        assert config.history_path == os.path.join(mock_paths["CLI_PATH"], "history")
+        assert config.memory_path == "/home/user/.gpt-cli/memory.json"
+        assert config.history_path == "/home/user/.gpt-cli/history"
         assert config.memory_limit == 10
         assert config.max_summary_tokens == 2048
 
         # Logging
-        assert config.log_file == os.path.join(mock_paths["CLI_PATH"], "gpt.log")
+        assert config.log_file == "/home/user/.gpt-cli/gpt.log"
         assert config.log_level == "INFO"
         assert config.log_to_console is False
 
         # Runtime Behavior
-        assert config.markdown_enabled is False
+        assert config.markdown_enabled is True  # Updated default from second config.py
         assert config.stream_enabled is False
 
 
@@ -180,3 +183,26 @@ def test_config_missing_env_file(mock_os, mock_paths):
         assert config.api_key is None
         mock_load_dotenv.assert_any_call()
         mock_load_dotenv.assert_any_call(mock_paths["ENV_PATH"])
+
+
+# Test Config with custom paths
+def test_config_custom_paths(mock_os, mock_paths):
+    """Test Config handles custom MEMORY_PATH, HISTORY_PATH, and LOG_FILE correctly."""
+    mock_os.getenv.side_effect = lambda key, default=None: {
+        "MEMORY_PATH": "/alternate/memory.json",
+        "HISTORY_PATH": "/alternate/history",
+        "LOG_FILE": "/alternate/gpt.log",
+        "OPENAI_API_KEY": "test_key",
+    }.get(key, default)
+
+    with patch("blackcortex_cli.config.config.load_env"):
+        config = Config()
+
+        assert config.memory_path == "/alternate/memory.json"
+        assert config.history_path == "/alternate/history"
+        assert config.log_file == "/alternate/gpt.log"
+        assert config.api_key == "test_key"
+        # Verify defaults for other settings
+        assert config.model == "gpt-4o"
+        assert config.memory_limit == 10
+        assert config.log_level == "INFO"
