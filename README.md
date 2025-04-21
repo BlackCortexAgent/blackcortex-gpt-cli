@@ -47,46 +47,46 @@ cd blackcortex-gpt-cli
 make dev
 ```
 
-### Sample `.env`
-
-```env
-OPENAI_API_KEY=your-api-key-here
-OPENAI_MODEL=gpt-4o
-OPENAI_DEFAULT_PROMPT=You are a helpful CLI assistant.
-OPENAI_LOGFILE=~/.gpt.log
-OPENAI_TEMPERATURE=0.5
-OPENAI_MAX_TOKENS=4096
-OPENAI_MAX_SUMMARY_TOKENS=2048
-OPENAI_MEMORY_PATH=~/.gpt_memory.json
-OPENAI_STREAM_ENABLED=false
-```
-
-## CLI Usage
+### CLI Usage
 
 After installation, use the `gpt` command globally.
 
 #### **Positional Arguments**
 
-| Argument     | Description                |
-| ------------ | -------------------------- |
-| `input_data` | Send one-shot prompt input |
+| Argument     | Description                                 |
+| ------------ | ------------------------------------------- |
+| `input_data` | Input text for one-shot command processing. |
 
 #### **Options**
 
-| Flag                                  | Description                                            |
-| ------------------------------------- | ------------------------------------------------------ |
-| `-h`, `--help`                        | Show this help message and exit                        |
-| `-m`, `--no-markdown`                 | Disable Markdown formatting in responses               |
-| `-s`, `--stream`                      | Stream assistant responses token-by-token              |
-| `-r`, `--reset`                       | Reset context memory                                   |
-| `-e`, `--env`                         | Open configuration file                                |
-| `-u`, `--update`                      | Update the CLI tool                                    |
-| `-x`, `--uninstall`                   | Uninstall the CLI tool                                 |
-| `-k [API_KEY]`, `--set-key [API_KEY]` | Set or update OpenAI API key (prompt if value omitted) |
-| `-p`, `--ping`                        | Test OpenAI API connectivity                           |
-| `-l`, `--log`                         | Display conversation log                               |
-| `-c`, `--clear-log`                   | Clear the conversation log                             |
-| `-v`, `--version`                     | Display current version                                |
+- `-h, --help`: Show this help message and exit
+
+##### **Session**
+
+- `-ch, --clear-history`: Clear prompt history
+- `-cl, --clear-log`: Clear the conversation log
+- `-cm, --clear-memory`: Clear context memory
+- `-l, --log`: Display conversation log
+
+##### **Configuration**
+
+- `-e, --env`: Open configuration file
+- `-k [API_KEY], --set-key [API_KEY]`: Set or update OpenAI API key (prompt if value omitted)
+
+##### **Output**
+
+- `-md {true,false}, --markdown {true,false}`: Control Markdown formatting in responses ('true' to enable, 'false' to disable)
+- `-s {true,false}, --stream {true,false}`: Control streaming of assistant responses ('true' to enable, 'false' to disable)
+
+##### **System**
+
+- `-p, --ping`: Test OpenAI API connectivity
+- `-x, --uninstall`: Uninstall the CLI tool
+- `-u, --update`: Update the CLI tool
+
+##### **General**
+
+- `-v, --version`: Show version and exit
 
 ## Environment Configuration
 
@@ -97,6 +97,29 @@ The GPT CLI loads settings from two locations:
 
 You can configure model behavior, memory, logging, and streaming options.
 
+### Sample `.env` File
+
+```env
+OPENAI_API_KEY=your-api-key-here
+MODEL=gpt-4o
+SUMMARY_MODEL=gpt-3.5-turbo
+DEFAULT_PROMPT="You are a helpful assistant."
+TEMPERATURE=0.7
+MAX_TOKENS=4096
+
+MEMORY_PATH=/custom/path/memory.json
+HISTORY_PATH=/custom/path/history
+MEMORY_LIMIT=10
+MAX_SUMMARY_TOKENS=2048
+
+LOG_FILE=/custom/path/gpt.log
+LOG_LEVEL=INFO
+LOG_TO_CONSOLE=true
+
+MARKDOWN_ENABLED=true
+STREAM_ENABLED=false
+```
+
 > Use `gpt --env` to open and edit the `.env` file in your terminal editor.
 
 ## Memory System
@@ -106,7 +129,7 @@ Memory includes:
 - Rolling conversation summary
 - The 10 most recent messages
 
-Older messages are summarized once the limit is reached. Use `--reset` to clear memory.
+Older messages are summarized once the limit is reached. Use `--clear-memory` to clear memory.
 
 ## Troubleshooting
 
@@ -119,7 +142,7 @@ Older messages are summarized once the limit is reached. Use `--reset` to clear 
 ```bash
 You: Tell me a joke about databases
 
-GPT: Why did the database break up with the spreadsheet?
+Assistant: Why did the database break up with the spreadsheet?
 
 Because it couldn't handle the rows of emotions.
 ────────────────────────────────────────────────────────
@@ -129,7 +152,7 @@ Because it couldn't handle the rows of emotions.
 
 We welcome all contributions!
 
-### 🚀 Quickstart for Development
+### Quickstart for Development
 
 ```bash
 git clone https://github.com/BlackCortexAgent/blackcortex-gpt-cli.git
@@ -154,7 +177,7 @@ make format
 Use `make check` to lint, test, build, and validate in `.venv`.  
 Use `make ci-release` for system Python (e.g., CI/CD pipelines).
 
-### 📄 See [CONTRIBUTING.md](CONTRIBUTING.md) for full details.
+### See [CONTRIBUTING.md](CONTRIBUTING.md) for full details.
 
 ## License
 

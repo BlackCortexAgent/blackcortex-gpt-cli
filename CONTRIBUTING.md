@@ -47,7 +47,7 @@ source .venv/bin/activate
 Run all tests using:
 
 ```bash
-make ci-test
+make check
 ```
 
 Tests are powered by `pytest` with `pytest-testdox` for human-readable output.

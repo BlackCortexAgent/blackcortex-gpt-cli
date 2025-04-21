@@ -1,34 +1,38 @@
-# blackcortex_cli/utils/formatting.py
+"""
+Utility functions for formatted terminal output using Rich.
+Provides Markdown rendering, wrapped printing, and styled headers.
+"""
 
-from rich.console import Console
-from rich.text import Text
+from rich.markdown import Markdown
 
-console = Console()
-
-MAX_WIDTH = 100
+from blackcortex_cli.utils.console import console
 
 
-def render_header(left: str, right: str, style_left="bold", style_right="dim") -> Text:
+def print_wrapped(text: str, markdown: bool = False, end: str = "\n") -> None:
     """
-    Renders a left-right aligned header with consistent width for CLI output.
+    Print text with wrapping, optionally rendering as Markdown.
+
+    Args:
+        text: The text to print.
+        markdown: Whether to render the text as Markdown.
+        end: String to append after printing (default: newline).
     """
-    space = MAX_WIDTH - len(left) - len(right) - 2
-    spacer = " " * max(space, 1)
-    return Text.assemble((left, style_left), spacer, (right, style_right))
-
-
-def print_wrapped(text, markdown=True):
-    """
-    Prints text wrapped to MAX_WIDTH. Handles rich.Text and Markdown input.
-    """
-    from rich.markdown import Markdown
-    from rich.text import Text
-
-    if isinstance(text, str):
-        text = Markdown(text) if markdown else Text(text)
-
-    if isinstance(text, Text):
-        for line in text.wrap(console, width=MAX_WIDTH):
-            console.print(line)
+    if markdown:
+        console.print(Markdown(text), end=end)
     else:
-        console.print(text)
+        console.print(text, end=end)
+
+
+def render_header(left: str, right: str, style_left: str = "bold") -> str:
+    """
+    Render a styled header with left and right-aligned text.
+
+    Args:
+        left: The primary label text.
+        right: The secondary dimmed text.
+        style_left: Rich style to apply to the left text (default: bold).
+
+    Returns:
+        A Rich-formatted string combining both styled parts.
+    """
+    return f"[{style_left}]{left}[/{style_left}] [dim]{right}[/dim]"

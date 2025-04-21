@@ -1,107 +1,295 @@
-"""
-Unit tests for ReplRunner in blackcortex_cli.repl.
-
-Covers REPL input handling, markdown rendering, streaming and blocking modes,
-and logging of user interactions.
-"""
-
+import os
 from contextlib import nullcontext
 from unittest.mock import MagicMock, patch
 
 import pytest
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 
-from blackcortex_cli.repl import ReplRunner
-
-
-@pytest.fixture
-def dummy_chat():
-    chat = MagicMock()
-    chat.config.model = "gpt-3.5-turbo"
-    chat.stream_enabled = False
-    return chat
+from blackcortex_cli.core.context import Context
+from blackcortex_cli.repl import FilteredFileHistory, ReplRunner
 
 
 @pytest.fixture
-def dummy_log():
-    return MagicMock()
+def mock_context():
+    """Fixture for a mocked Context object with chat_manager and log_manager."""
+    context = MagicMock(spec=Context)
+    context.config = MagicMock()
+    context.config.stream_enabled = False
+    context.config.markdown_enabled = False
+    context.config.model = "gpt-4o"
+    context.config.history_path = "~/.gpt-cli/history"
+    context.chat_manager = MagicMock()
+    context.chat_manager.get_answer.return_value = ("Response", 10, "2025-04-21 12:00:00")
+    context.log_manager = MagicMock()
+    return context
 
 
-@patch("blackcortex_cli.repl.console.print")
-@patch("blackcortex_cli.repl.patch_stdout", return_value=nullcontext())
-def test_run_blocking_flow_with_exit(mock_patch_stdout, mock_console_print, dummy_chat, dummy_log):
-    """
-    Test REPL in blocking mode handles input and exits cleanly after 'exit'.
-    """
-    dummy_chat.get_answer.return_value = ("This is a test.", 42)
-
-    runner = ReplRunner(chat=dummy_chat, log=dummy_log)
-    runner.session.prompt = MagicMock(side_effect=["Say something", "exit"])
-    runner.run()
-
-    dummy_chat.get_answer.assert_called_once_with("Say something", return_usage=True)
-    dummy_log.write.assert_called_once_with("Say something", "This is a test.")
-    assert any("Goodbye" in str(args[0]) for args, _ in mock_console_print.call_args_list if args)
+@pytest.fixture
+def temp_history_file(tmp_path):
+    """Fixture for a temporary history file."""
+    history_file = tmp_path / "history"
+    return str(history_file)
 
 
-@patch("blackcortex_cli.repl.console.print")
-@patch("blackcortex_cli.repl.patch_stdout", return_value=nullcontext())
-def test_run_streaming_mode(mock_patch_stdout, mock_console_print, dummy_chat, dummy_log):
-    """
-    Test REPL in streaming mode handles input and exits cleanly.
-    """
-    dummy_chat.stream_enabled = True
-    dummy_chat.get_answer.return_value = "Streamed response."
+@pytest.fixture
+def mock_prompt_session(monkeypatch):
+    """Fixture to mock PromptSession."""
+    from prompt_toolkit.shortcuts import PromptSession
 
-    runner = ReplRunner(chat=dummy_chat, log=dummy_log)
-    runner.session.prompt = MagicMock(side_effect=["Stream this", "quit"])
-    runner.run()
-
-    dummy_chat.get_answer.assert_called_once_with("Stream this")
-    dummy_log.write.assert_called_once_with("Stream this", "Streamed response.")
-    assert any("Goodbye" in str(args[0]) for args, _ in mock_console_print.call_args_list if args)
+    mock_session = MagicMock(spec=PromptSession)
+    mock_constructor = MagicMock(return_value=mock_session)
+    monkeypatch.setattr("blackcortex_cli.repl.PromptSession", mock_constructor)
+    return mock_constructor, mock_session
 
 
-@patch("blackcortex_cli.repl.console.print")
-@patch("blackcortex_cli.repl.patch_stdout", return_value=nullcontext())
-def test_run_handles_keyboard_interrupt(mock_patch_stdout, mock_print, dummy_chat, dummy_log):
-    """
-    Test REPL catches and prints friendly message on KeyboardInterrupt.
-    """
-    runner = ReplRunner(chat=dummy_chat, log=dummy_log)
-    runner.session.prompt = MagicMock(side_effect=[KeyboardInterrupt, "exit"])
-    runner.run()
+def test_filtered_file_history_init(temp_history_file, monkeypatch):
+    """Test FilteredFileHistory initialization and permission setting."""
+    mock_chmod = MagicMock()
+    monkeypatch.setattr(os, "chmod", mock_chmod)
+    monkeypatch.setattr(os.path, "exists", lambda x: True)
 
-    assert any("Interrupted" in str(call.args[0]) for call in mock_print.call_args_list)
+    history = FilteredFileHistory(temp_history_file)
 
-
-@patch("blackcortex_cli.repl.console.print")
-@patch("blackcortex_cli.repl.patch_stdout", return_value=nullcontext())
-def test_run_handles_openai_error(mock_patch_stdout, mock_print, dummy_chat, dummy_log):
-    """
-    Test REPL handles OpenAIError or RuntimeError gracefully.
-    """
-    dummy_chat.get_answer.side_effect = RuntimeError("API crashed")
-
-    runner = ReplRunner(chat=dummy_chat, log=dummy_log)
-    runner.session.prompt = MagicMock(side_effect=["hello", "exit"])
-    runner.run()
-
-    assert any("Error" in str(args[0]) for args, _ in mock_print.call_args_list if args)
+    assert history.filename == temp_history_file
+    mock_chmod.assert_called_once_with(temp_history_file, 0o660)
 
 
-@patch("blackcortex_cli.repl.console.print")
-@patch("blackcortex_cli.repl.patch_stdout", return_value=nullcontext())
-def test_run_skips_empty_input(mock_patch_stdout, mock_print, dummy_chat, dummy_log):
-    """
-    Test REPL skips empty input and prompts again.
-    """
-    dummy_chat.get_answer.return_value = ("Skipped nothing", 0)
+def test_filtered_file_history_init_no_file(temp_history_file, monkeypatch):
+    """Test FilteredFileHistory when the history file does not exist."""
+    mock_chmod = MagicMock()
+    monkeypatch.setattr(os, "chmod", mock_chmod)
+    monkeypatch.setattr(os.path, "exists", lambda x: False)
 
-    runner = ReplRunner(chat=dummy_chat, log=dummy_log)
-    runner.session.prompt = MagicMock(side_effect=["", "hello", "exit"])
-    runner.run()
+    FilteredFileHistory(temp_history_file)
 
-    dummy_chat.get_answer.assert_called_once_with("hello", return_usage=True)
-    assert not any(
-        "Skipped nothing" in str(args[0]) for args, _ in mock_print.call_args_list if args
+    mock_chmod.assert_not_called()
+
+
+def test_filtered_file_history_append_string(temp_history_file, monkeypatch):
+    """Test append_string filters 'exit' and 'quit' and sets permissions."""
+    mock_chmod = MagicMock()
+    monkeypatch.setattr(os, "chmod", mock_chmod)
+    monkeypatch.setattr(os.path, "exists", lambda x: True)
+    mock_append = MagicMock()
+    monkeypatch.setattr("prompt_toolkit.history.FileHistory.append_string", mock_append)
+
+    history = FilteredFileHistory(temp_history_file)
+
+    history.append_string("test command")
+    mock_append.assert_called_once_with("test command")
+    mock_chmod.assert_called_with(temp_history_file, 0o660)
+
+    mock_append.reset_mock()
+    mock_chmod.reset_mock()
+    history.append_string("exit")
+    mock_append.assert_not_called()
+    mock_chmod.assert_not_called()
+
+    history.append_string("QUIT")
+    mock_append.assert_not_called()
+    mock_chmod.assert_not_called()
+
+
+def test_filtered_file_history_permission_error(temp_history_file, monkeypatch, capsys):
+    """Test _set_permissions handles PermissionError."""
+    monkeypatch.setattr(os.path, "exists", lambda x: True)
+    monkeypatch.setattr(os, "chmod", MagicMock(side_effect=PermissionError("Access denied")))
+
+    FilteredFileHistory(temp_history_file)
+
+    captured = capsys.readouterr()
+    assert "Permission denied when setting" in captured.out
+    assert temp_history_file in captured.out
+    assert "0o660" in captured.out
+
+
+def test_filtered_file_history_generic_error(temp_history_file, monkeypatch, capsys):
+    """Test _set_permissions handles generic exceptions."""
+    monkeypatch.setattr(os.path, "exists", lambda x: True)
+    monkeypatch.setattr(os, "chmod", MagicMock(side_effect=Exception("Unknown error")))
+
+    FilteredFileHistory(temp_history_file)
+
+    captured = capsys.readouterr()
+    assert "Failed to set permissions for" in captured.out
+    assert temp_history_file in captured.out
+    assert "Unknown" in captured.out
+
+
+def test_repl_runner_init(mock_context, temp_history_file, mock_prompt_session):
+    """Test ReplRunner initialization with context and history."""
+    mock_constructor, mock_session = mock_prompt_session
+    mock_context.config.history_path = temp_history_file
+
+    repl = ReplRunner(mock_context)
+
+    assert repl.context == mock_context
+    assert repl.session == mock_session
+    mock_constructor.assert_called_once()
+    call_args = mock_constructor.call_args.kwargs
+    assert call_args["history"].filename == os.path.expanduser(temp_history_file)
+    assert isinstance(call_args["auto_suggest"], AutoSuggestFromHistory)
+
+
+def test_repl_runner_run_welcome_message(mock_context, mock_prompt_session, capsys):
+    """Test ReplRunner displays welcome message on run."""
+    mock_constructor, mock_session = mock_prompt_session
+    mock_session.prompt.side_effect = ["exit"]
+
+    repl = ReplRunner(mock_context)
+    repl.run()
+
+    captured = capsys.readouterr()
+    assert "BlackCortex GPT CLI is ready. Type 'exit' to quit." in captured.out
+
+
+def test_repl_runner_run_exit_command(mock_context, mock_prompt_session, capsys):
+    """Test ReplRunner exits on 'exit' or 'quit' commands."""
+    mock_constructor, mock_session = mock_prompt_session
+    mock_session.prompt.side_effect = ["exit"]
+
+    repl = ReplRunner(mock_context)
+    repl.run()
+
+    captured = capsys.readouterr()
+    assert "Goodbye!" in captured.out
+
+    mock_session.prompt.side_effect = ["quit"]
+    repl.run()
+    assert "Goodbye!" in capsys.readouterr().out
+
+
+def test_repl_runner_run_empty_input(mock_context, mock_prompt_session):
+    """Test ReplRunner skips empty input."""
+    mock_constructor, mock_session = mock_prompt_session
+    mock_session.prompt.side_effect = ["", "exit"]
+
+    repl = ReplRunner(mock_context)
+    repl.run()
+
+    mock_context.chat_manager.get_answer.assert_not_called()
+
+
+def test_repl_runner_run_non_streaming(mock_context, mock_prompt_session, capsys):
+    """Test ReplRunner processes input in non-streaming mode."""
+    mock_constructor, mock_session = mock_prompt_session
+    mock_context.config.stream_enabled = False
+    mock_context.config.markdown_enabled = True
+    mock_session.prompt.side_effect = ["Hello", "exit"]
+    mock_context.chat_manager.get_answer.return_value = ("# Response", 10, "2025-04-21 12:00:00")
+
+    with (
+        patch("blackcortex_cli.repl.print_wrapped") as mock_print_wrapped,
+        patch("blackcortex_cli.utils.console.console.status", return_value=nullcontext()),
+        patch("blackcortex_cli.repl.patch_stdout", return_value=nullcontext()),
+    ):
+        repl = ReplRunner(mock_context)
+        repl.run()
+
+    assert mock_print_wrapped.call_count == 1
+    mock_context.log_manager.write.assert_called_once_with("Hello", "# Response", 10)
+    captured = capsys.readouterr()
+    assert "gpt-4o  •  10 tokens  •  2025-04-21 12:00:00" in captured.out
+
+
+def test_repl_runner_run_streaming(mock_context, mock_prompt_session, capsys):
+    """Test ReplRunner processes input in streaming mode."""
+    mock_constructor, mock_session = mock_prompt_session
+    mock_context.config.stream_enabled = True
+    mock_context.config.markdown_enabled = False
+    mock_session.prompt.side_effect = ["Stream me", "exit"]
+    mock_context.chat_manager.get_answer.return_value = (
+        "Streamed response",
+        15,
+        "2025-04-21 12:00:00",
     )
+
+    with patch("blackcortex_cli.repl.patch_stdout", return_value=nullcontext()):
+        repl = ReplRunner(mock_context)
+        repl.run()
+
+    mock_context.log_manager.write.assert_called_once_with("Stream me", "Streamed response", 15)
+    captured = capsys.readouterr()
+    assert "gpt-4o  •  15 tokens  •  2025-04-21 12:00:00" in captured.out
+
+
+def test_repl_runner_run_openai_error(mock_context, mock_prompt_session, capsys):
+    """Test ReplRunner handles OpenAIError."""
+    from openai import OpenAIError
+
+    mock_constructor, mock_session = mock_prompt_session
+    mock_session.prompt.side_effect = ["Test", "exit"]
+    mock_context.chat_manager.get_answer.side_effect = OpenAIError("API failure")
+
+    with patch("blackcortex_cli.repl.patch_stdout", return_value=nullcontext()):
+        repl = ReplRunner(mock_context)
+        repl.run()
+
+    mock_context.log_manager.log_error.assert_called_once_with("Error occurred: API failure")
+    captured = capsys.readouterr()
+    assert "Error: API failure" in captured.out
+
+
+def test_repl_runner_run_runtime_error(mock_context, mock_prompt_session, capsys):
+    """Test ReplRunner handles RuntimeError."""
+    mock_constructor, mock_session = mock_prompt_session
+    mock_session.prompt.side_effect = ["Test", "exit"]
+    mock_context.chat_manager.get_answer.side_effect = RuntimeError("Unexpected error")
+
+    with patch("blackcortex_cli.repl.patch_stdout", return_value=nullcontext()):
+        repl = ReplRunner(mock_context)
+        repl.run()
+
+    mock_context.log_manager.log_error.assert_called_once_with("Error occurred: Unexpected error")
+    captured = capsys.readouterr()
+    assert "Error: Unexpected error" in captured.out
+
+
+def test_repl_runner_run_no_token_usage(mock_context, mock_prompt_session, capsys):
+    """Test ReplRunner handles None token_usage."""
+    mock_constructor, mock_session = mock_prompt_session
+    mock_context.config.stream_enabled = False
+    mock_context.config.markdown_enabled = False
+    mock_session.prompt.side_effect = ["Test", "exit"]
+    mock_context.chat_manager.get_answer.return_value = ("Response", None, "2025-04-21 12:00:00")
+
+    with (
+        patch("blackcortex_cli.utils.console.console.status", return_value=nullcontext()),
+        patch("blackcortex_cli.repl.patch_stdout", return_value=nullcontext()),
+    ):
+        repl = ReplRunner(mock_context)
+        repl.run()
+
+    captured = capsys.readouterr()
+    assert "gpt-4o  •  N/A tokens  •  2025-04-21 12:00:00" in captured.out
+    mock_context.log_manager.write.assert_called_once_with("Test", "Response", None)
+
+
+def test_repl_runner_run_invalid_history_path(mock_context, mock_prompt_session, capsys):
+    """Test ReplRunner with an invalid history file path."""
+    mock_constructor, mock_session = mock_prompt_session
+    mock_context.config.history_path = "/invalid/path/history"
+    mock_session.prompt.side_effect = ["exit"]
+
+    with patch("blackcortex_cli.repl.patch_stdout", return_value=nullcontext()):
+        repl = ReplRunner(mock_context)
+        repl.run()
+
+    captured = capsys.readouterr()
+    assert "BlackCortex GPT CLI is ready" in captured.out
+
+
+def test_repl_runner_run_keyboard_interrupt(mock_context, mock_prompt_session, capsys):
+    """Test ReplRunner handles KeyboardInterrupt and continues until 'exit'."""
+    mock_constructor, mock_session = mock_prompt_session
+    mock_session.prompt.side_effect = [KeyboardInterrupt, "exit"]
+
+    with patch("blackcortex_cli.repl.patch_stdout", return_value=nullcontext()):
+        repl = ReplRunner(mock_context)
+        repl.run()
+
+    mock_context.log_manager.log_info.assert_called_once_with("User interrupted the session")
+    mock_context.chat_manager.get_answer.assert_not_called()
+    captured = capsys.readouterr()
+    assert "Interrupted. Type 'exit' to quit." in captured.out
+    assert "Goodbye!" in captured.out
