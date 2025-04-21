@@ -16,9 +16,28 @@ def temp_log_file(tmp_path):
 
 # Fixture for a mocked console
 @pytest.fixture
-def mock_console():
-    """Provide a mocked console object."""
-    return MagicMock()
+def mock_console(monkeypatch):
+    """Provide a mocked console object that integrates with capsys."""
+    mock = MagicMock()
+
+    # Ensure console.print writes to sys.stdout for capsys capture
+    def mock_print(*args, **kwargs):
+        print(*args, **kwargs)  # Output to sys.stdout
+
+    mock.print.side_effect = mock_print
+    monkeypatch.setattr("blackcortex_cli.core.log_manager.console", mock)
+    return mock
+
+
+# Fixture to prevent .gpt-cli directory creation
+@pytest.fixture(autouse=True)
+def prevent_gpt_cli_dir(monkeypatch):
+    """Mock file system operations to prevent .gpt-cli directory creation."""
+    monkeypatch.setattr(os, "makedirs", MagicMock())
+    monkeypatch.setattr(os, "chmod", MagicMock(side_effect=OSError("Mocked chmod")))
+    # Mock load_env to prevent .env loading and directory creation
+    monkeypatch.setattr("blackcortex_cli.config.config.load_env", lambda: False)
+    yield
 
 
 # Test initialization without console logging
@@ -126,9 +145,10 @@ def test_set_permissions_permission_error(temp_log_file, mock_console, monkeypat
     log_manager._set_permissions()
 
     captured = capsys.readouterr()
-    assert "Permission denied" in captured.out
-    assert temp_log_file in captured.out
-    assert "0o600" in captured.out
+    expected_message = (
+        f"[bold red][x] Permission denied when setting {temp_log_file} to 0o600[/bold red]"
+    )
+    assert expected_message.replace("\n", " ") in captured.out.replace("\n", " ")
 
 
 # Test _set_permissions with generic exception
@@ -141,9 +161,8 @@ def test_set_permissions_generic_error(temp_log_file, mock_console, monkeypatch,
     log_manager._set_permissions()
 
     captured = capsys.readouterr()
-    assert "Failed to set permissions" in captured.out
-    assert temp_log_file in captured.out
-    assert "Unknown error" in captured.out
+    expected_message = f"[bold red][x] Failed to set permissions or group for {temp_log_file}: Unknown error[/bold red]"
+    assert expected_message.replace("\n", " ") in captured.out.replace("\n", " ")
 
 
 # Test _set_permissions with non-existent file
