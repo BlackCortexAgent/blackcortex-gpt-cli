@@ -1,6 +1,6 @@
 [project]
 name = "blackcortex-gpt-cli"
-version = "1.2.1"
+version = "1.3.0"
 description = "Terminal-based GPT CLI with memory, markdown, and stream support"
 keywords = ["gpt", "cli", "terminal", "openai"]
 readme = "README.md"
@@ -21,6 +21,7 @@ classifiers = [
 dependencies = [
   "openai",
   "rich",
+  "tiktoken",
   "prompt_toolkit",
   "python-dotenv"
 ]
@@ -32,6 +33,7 @@ dev = [
   "pre-commit",
   "pylint",
   "pytest",
+  "pytest-cov",
   "pytest-testdox",
   "ruff",
   "setuptools",
@@ -41,7 +43,7 @@ dev = [
 
 # CLI entry point
 [project.scripts]
-gpt = "blackcortex_cli.gpt:main"
+gpt = "blackcortex_cli.main:main"
 
 # Build system configuration
 [build-system]

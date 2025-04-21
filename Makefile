@@ -16,6 +16,7 @@ postinstall: ## Install pre-commit hooks
 	$(VENV_BIN)/pre-commit install
 
 dev: install postinstall ## Full setup for local development
+	@echo "✅ Dev environment is ready. Run: source .venv/bin/activate"
 
 format: ## Auto-format code
 	@echo "🧼 Auto-formatting with Ruff..."
@@ -25,11 +26,18 @@ lint: ## Lint project
 	@echo "🔎 Linting..."
 	$(VENV_BIN)/pylint blackcortex_cli --fail-under=9.0
 
-test: ## Run tests
-	@echo "🧪 Running tests..."
-	PYTHONPATH=./ $(VENV_BIN)/pytest tests --testdox
+test: ## Run tests with coverage
+	@echo "🧪 Running tests with coverage..."
+	PYTHONPATH=./ $(VENV_BIN)/pytest \
+		--cov \
+		--cov-report=term-missing \
+		--testdox tests
 
-check: lint test ## Run lint + tests
+check: lint test ## Run lint + tests + twine check
+	@echo "📦 Building (venv)..."
+	$(VENV_BIN)/python -m build
+	@echo "🔎 Validating (venv)..."
+	$(VENV_BIN)/twine check dist/*
 	@echo "✅ Check complete."
 
 clean: ## Remove build artifacts and caches
@@ -37,6 +45,7 @@ clean: ## Remove build artifacts and caches
 	rm -rf dist build *.egg-info .pytest_cache .ruff_cache
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
+	find . -type f -name "*.coverage" -delete
 
 uninstall: ## Remove venv and uninstall package
 	@echo "🧹 Uninstalling..."
@@ -52,8 +61,11 @@ help: ## Show available targets
 ci-release: clean ## CI: Run checks using system Python (no venv)
 	@echo "🔍 Linting..."
 	pylint blackcortex_cli --fail-under=9.0
-	@echo "🧪 Testing..."
-	PYTHONPATH=./ pytest tests --testdox
+	@echo "🧪 Testing with coverage..."
+	PYTHONPATH=./ pytest \
+		--cov \
+		--cov-report=term-missing \
+		--testdox tests
 	@echo "📦 Building..."
 	python -m build
 	@echo "🔎 Validating..."

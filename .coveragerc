@@ -1,0 +1,17 @@
+[run]
+branch = True
+source = blackcortex_cli
+omit =
+    */__init__.py
+    tests/*
+
+[report]
+show_missing = True
+skip_covered = False
+fail_under = 90
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
+
+[html]
+directory = coverage_html_report

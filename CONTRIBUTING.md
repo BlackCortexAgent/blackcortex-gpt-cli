@@ -1,54 +1,73 @@
 # Contributing to `blackcortex-gpt-cli`
 
-Welcome! 🎉 Whether you're reporting bugs, proposing features, or submitting code — your contributions make this project better.
+Welcome! 🎉 Whether you're fixing bugs, proposing features, or submitting code — your contributions help shape a better terminal AI experience.
 
-This project is a terminal-based conversational assistant powered by OpenAI, with persistent memory, markdown rendering, and streaming support.
+This project is a terminal-based conversational assistant powered by OpenAI, featuring persistent memory, markdown rendering, streaming responses, and local tool integration.
 
 ---
 
 ## 🧰 Development Setup
 
-### 1. Clone and Install
+### 1. Clone and Set Up
 
 ```bash
 git clone https://github.com/BlackCortexAgent/blackcortex-gpt-cli.git
 cd blackcortex-gpt-cli
-make install
+make dev
 ```
 
-> This creates a `.venv`, installs dependencies, and sets up pre-commit hooks.
+> This sets up a `.venv`, installs all dev dependencies, and configures pre-commit hooks.
 
-### 2. Activate the Virtual Environment
+### 2. Activate the Environment
+
+#### 🖥️ In your terminal:
 
 ```bash
 source .venv/bin/activate
 ```
 
+#### 🧠 In **Visual Studio Code**:
+
+1. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS)
+2. Search: `Python: Select Interpreter`
+3. Choose the one that ends in:
+
+   ```
+   .venv/bin/python
+   ```
+
+> If you don't see it, click `Enter interpreter path...` and manually browse to `.venv/bin/python`.
+
+✅ This ensures linting, test discovery, and debugging all use your virtualenv.
+
 ---
 
-## 🧪 Testing
+## 🧪 Run Tests
 
-Run the full test suite with:
+Run all tests using:
 
 ```bash
-make test
+make check
 ```
 
-Tests use `pytest` with `pytest-testdox` for clean, readable output.
+Tests are powered by `pytest` with `pytest-testdox` for human-readable output.
 
 ---
 
 ## 🧼 Linting and Formatting
 
-We use [Ruff](https://docs.astral.sh/ruff/) and `pylint` for code quality and formatting.
+We enforce clean code with:
 
-### Auto-format code:
+- [`ruff`](https://docs.astral.sh/ruff/) (auto-formatting, linting)
+- `pylint` (static analysis)
+
+### Format:
 
 ```bash
 make format
 ```
 
-### Run linter:
+### Lint:
 
 ```bash
 make lint
@@ -56,27 +75,15 @@ make lint
 
 ---
 
-## ✅ Full Local Check
+## ✅ Pre-Commit Checks
 
-To run all checks before a commit or release:
-
-```bash
-make check
-```
-
-This runs lint, tests, builds the package, and validates it with Twine.
-
----
-
-## 🪝 Pre-commit Hooks
-
-We use [pre-commit](https://pre-commit.com) to enforce formatting and standards:
+We use [pre-commit](https://pre-commit.com) to run formatting and code quality checks automatically:
 
 ```bash
 pre-commit install
 ```
 
-Run hooks manually with:
+To run all checks manually:
 
 ```bash
 pre-commit run --all-files
@@ -84,36 +91,51 @@ pre-commit run --all-files
 
 ---
 
-## ✏️ Making Contributions
+## 🔁 Local CI Check
 
-- Add or update tests in the `tests/` directory
-- Follow CLI structure in `gpt.py` and `commands.py`
-- Use `config.py` for environment-based settings
-- Use `memory.py` for memory logic (persistent JSON + summarization)
-- Run `make format && make lint` before submitting your PR
+Run a full validation before a commit or release:
+
+```bash
+make check
+```
+
+This runs:
+
+- Linting (requires pylint ≥ 9.0)
+- Tests
+- Coverage enforcement (≥ 90%)
+- Build and validate with Twine
+
+---
+
+## ✏️ Contribution Guidelines
+
+- Add or update tests under `tests/`
+- Run `make format && make lint` before pushing your changes
 
 ---
 
 ## 🚀 CI/CD
 
-Our GitHub Actions workflows ensure:
+GitHub Actions automatically:
 
-- Every PR is linted, tested, and validated (`check.yml`)
-- Tagged releases are built and published to PyPI (`publish.yml`)
-- Contributors can run CI logic locally using:
+- Lint and test every PR (`check.yml`)
+- Build and publish tagged releases to PyPI (`publish.yml`)
+
+You can replicate `make ci-release` locally with:
 
 ```bash
-make ci-release
+make check
 ```
 
 ---
 
-## 📜 Licensing
+## 📜 License
 
-By contributing, you agree that your code is licensed under the [MIT License](LICENSE).
+By contributing, you agree that your code will be released under the [MIT License](LICENSE).
 
 ---
 
-## 🙏 Thank You
+## 🙏 Thanks
 
-We appreciate every issue, suggestion, and PR. Thank you for helping improve `blackcortex-gpt-cli`!
+Every PR, issue, or suggestion improves `blackcortex-gpt-cli`. We appreciate your help in making this better for everyone.
